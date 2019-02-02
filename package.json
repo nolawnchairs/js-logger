@@ -1,0 +1,19 @@
+{
+  "name": "@nolawnchairs/logger",
+  "version": "1.0.4",
+  "description": "Formatted logger for the console",
+  "main": "index.js",
+  "keywords": [],
+  "author": "Michael Wieczorek",
+  "license": "MIT",
+  "dependencies": {
+    "chalk": "^2.4.1"
+  },
+  "scripts": {
+    "test": "tsc && node test.js"
+  },
+  "devDependencies": {
+    "@types/node": "^10.11.3",
+    "typescript": "^3.1.1"
+  }
+}

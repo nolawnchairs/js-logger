@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "target": "es6",
+    "sourceMap": false,
+    "importHelpers": true,
+    "allowSyntheticDefaultImports": true,
+    "removeComments": true,
+    "strict": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "strictPropertyInitialization": false,
+    "outDir": "./lib"
+  },
+  "include": [
+    "./src/**/*"
+  ]
+}
