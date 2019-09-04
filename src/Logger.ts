@@ -3,14 +3,27 @@ import * as proc from 'process'
 
 const pid = chalk.yellowBright(proc.pid.toString())
 
+// interface Mark {
+//   debug: string
+//   info: string
+//   warn: string
+//   error: string
+// }
+
 interface Mark {
-  debug: string
-  info: string
-  warn: string
-  error: string
+  debug: (text: string) => string
+  info: (text: string) => string
+  warn: (text: string) => string
+  error: (text: string) => string
 }
 
+
 type Level = 'debug' | 'info' | 'warn' | 'error'
+
+export interface Options {
+  printLevel?: 'full' | 'initial'
+}
+
 
 enum LevelCardinality {
   Debug,
@@ -19,56 +32,85 @@ enum LevelCardinality {
   Error
 }
 
+const colors: Mark = {
+  debug: chalk.greenBright,
+  info: chalk.blueBright,
+  warn: chalk.yellowBright,
+  error: chalk.redBright
+}
+
 class Logger {
 
-  public readonly mark: Mark
-  public level: LevelCardinality
+  private _appName: string
+  private _level: LevelCardinality
+  private _options: Options
 
-  constructor() {
-    const appName = require(__dirname + "./../package.json").name;
-    this.mark = {
-      debug: chalk.greenBright(appName),
-      info: chalk.blueBright(appName),
-      warn: chalk.yellow(appName),
-      error: chalk.redBright(appName)
-    }
-  }
+  set appName(appName: string) { this._appName = appName }
+  set level(level: LevelCardinality) { this._level = level }
+  set options(options: Options) { this._options = options }
 
   debug(message: string, ...args: any[]) {
-    if (this.level <= LevelCardinality.Debug)
-      this.log(message, this.mark.debug, ...args)
+    if (this._level <= LevelCardinality.Debug)
+      this.log(message, 'debug', ...args)
   }
 
   info(message: string, ...args: any[]) {
-    if (this.level <= LevelCardinality.Info)
-      this.log(message, this.mark.info, ...args)
+    if (this._level <= LevelCardinality.Info)
+      this.log(message, 'info', ...args)
   }
 
   warn(message: string, ...args: any[]) {
-    if (this.level <= LevelCardinality.Warn)
-      this.log(message, this.mark.warn, ...args)
+    if (this._level <= LevelCardinality.Warn)
+      this.log(message, 'warn', ...args)
   }
 
   error(message: string, ...args: any[]) {
-    if (this.level <= LevelCardinality.Error)
-      this.log(message, this.mark.error, ...args)
+    if (this._level <= LevelCardinality.Error)
+      this.log(message, 'error', ...args)
   }
 
-  private log(message: string, mark: string, ...args) {
+  private markColor(level: Level, text: string): string {
+    return colors[level](text)
+  }
+
+  private getLevelMark(level: Level) {
+    if (this._options.printLevel) {
+      if (this._options.printLevel == 'full') {
+        return this.markColor(level, strpad(level.toUpperCase(), 5))
+      }
+      return this.markColor(level, level.toUpperCase().charAt(0))
+    }
+  }
+
+  private log(message: string, level: Level, ...args: any[]) {
     const time = new Date().toISOString()
-    console.log(`${time} ${pid} ${mark} ${message}`, ...args)
+    const appName = this.markColor(level, this._appName)
+    const levelMark = this.getLevelMark(level)
+    const items = [
+      time,
+      pid,
+      levelMark,
+      appName,
+      message
+    ]
+
+    console.log(items.filter(i => !!i).join(' '), ...args)
   }
 }
 
 const instance = new Logger()
 
-function createLoggerInstance(appName: string, level?: Level): Logger {
-  instance.mark.debug = chalk.greenBright(appName)
-  instance.mark.info = chalk.blueBright(appName)
-  instance.mark.warn = chalk.yellow(appName)
-  instance.mark.error = chalk.redBright(appName)
+function createLoggerInstance(appName: string, level: Level, options?: Options): Logger {
+  instance.appName = appName
   instance.level = getLevelCardinality(level)
+  instance.options = { ...options }
   return instance
+}
+
+function strpad(text: string, size: number): string {
+  let s = text
+  while (s.length < size) s = s + ' ';
+  return s;
 }
 
 function getLevelCardinality(level: Level): LevelCardinality {

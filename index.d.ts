@@ -8,6 +8,10 @@ declare class Logger {
 }
 
 declare type Level = 'debug' | 'info' | 'warn' | 'error'
-declare function log(appName: string, level?: Level): Logger;
+declare function log(appName: string, level: Level, options?: Options): Logger;
+
+declare interface Options {
+  printLevel?: 'full' | 'initial'
+}
 
 export = log
