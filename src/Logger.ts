@@ -98,9 +98,8 @@ class Logger {
   }
 }
 
-const instance = new Logger()
-
 function createLoggerInstance(appName: string, level: Level, options?: Options): Logger {
+  const instance = new Logger()
   instance.appName = appName
   instance.level = getLevelCardinality(level)
   instance.options = { ...options }
