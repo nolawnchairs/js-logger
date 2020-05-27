@@ -8,6 +8,13 @@ export enum LogLevel {
   Error = 3
 }
 
+interface Components {
+  date: string
+  pid: string
+  level: string
+  message: string
+}
+
 const levels = [
   '\x1b[32mDEBUG\x1b[0m',
   '\x1b[36mINFO \x1b[0m',
@@ -15,9 +22,16 @@ const levels = [
   '\x1b[41mERROR\x1b[0m'
 ]
 
+export type FormatterSupplier = (components: Components) => string
+
 export class Logger {
 
-  constructor(readonly level: LogLevel) { }
+  constructor(readonly level: LogLevel, private readonly formatter?: FormatterSupplier) {
+    if (!formatter) {
+      this.formatter = c => '\x1b[30;1m' + c.date + '\x1b[0m ' +
+        c.pid + ' ' + c.level + ' | ' + c.message
+    }
+  }
 
   debug(message?: any, ...args: any[]) {
     if (this.level <= LogLevel.Debug)
@@ -40,7 +54,11 @@ export class Logger {
   }
 
   private build(level: LogLevel, message?: any): string {
-    return new Date().toISOString() + ' ' + pid + ' ' +
-      levels[level] + ' | ' + message
+    return this.formatter({
+      date: new Date().toISOString(),
+      level: levels[level],
+      pid,
+      message
+    })
   }
 }
