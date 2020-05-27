@@ -1,2 +1,5 @@
-const logger = require("./lib/Logger").default
-module.exports = logger
+const { Logger, LogLevel } = require("./lib/Logger")
+module.exports = {
+  Logger,
+  LogLevel,
+}

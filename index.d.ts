@@ -1,17 +1,15 @@
-/// <reference types="node" />
-
-declare class Logger {
-  debug(message: string, ...args: any[]): void;
-  info(message: string, ...args: any[]): void;
-  warn(message: string, ...args: any[]): void;
-  error(message: string, ...args: any[]): void;
+export declare enum LogLevel {
+	Debug = 0,
+	Info = 1,
+	Warn = 2,
+	Error = 3
 }
-
-declare type Level = 'debug' | 'info' | 'warn' | 'error'
-declare function log(appName: string, level: Level, options?: Options): Logger;
-
-declare interface Options {
-  printLevel?: 'full' | 'initial'
+export declare class Logger {
+	readonly level: LogLevel;
+	constructor(level: LogLevel);
+	debug(message?: any, ...args: any[]): void;
+	info(message?: any, ...args: any[]): void;
+	warn(message?: any, ...args: any[]): void;
+	error(message?: any, ...args: any[]): void;
+	private build;
 }
-
-export = log
