@@ -1,5 +1,4 @@
-const { Logger, LogLevel } = require("./lib/Logger")
-module.exports = {
-  Logger,
-  LogLevel,
-}
+const { Logger, LogLevel, LogEntry } = require("./lib/Logger")
+exports.Logger = Logger
+exports.LogLevel = LogLevel
+exports.LogEntry = LogEntry
