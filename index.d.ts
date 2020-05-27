@@ -13,10 +13,10 @@ export declare class Logger {
   error(message?: any, ...args: any[]): void;
 }
 
-declare interface Components {
+export declare interface LogEntry {
   date: string
   pid: string
   level: string
   message: string
 }
-declare type FormatterSupplier = (components: Components) => string
+declare type FormatterSupplier = (e: LogEntry) => string
