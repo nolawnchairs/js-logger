@@ -63,7 +63,7 @@ The log entry contains the following values:
 |-|-|-|
 | `date`| Date | Javascript Date object |
 | `level` | LogLevel | `LogLevel` enum value |
-| `levelValue` | string | string representation of level. The INFO and WARN strings are end-padded with a space for symmetry with ERROR and DEBUG |
+| `levelValue` | string | string representation of the logging level. The INFO and WARN strings are end-padded with a space for symmetry with ERROR and DEBUG |
 | `pid` | string | string value of process ID |
 | `message` | string | the formatted message |
 
