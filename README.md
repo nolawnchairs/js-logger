@@ -59,7 +59,7 @@ logger.info('This is the message!')
 ### LogEntry
 The log entry contains the following values:
 
-| `Key` | `Type` | `Description` |
+| Key | Type | Description |
 |-|-|-|
 | `date`| Date | Javascript Date object |
 | `level` | LogLevel | `LogLevel` enum value |
@@ -71,7 +71,7 @@ The log entry contains the following values:
 ### Colorizer
 The colorizer object contains static functions to colorize output using ANSI colors
 
-| `Function` | `Description` |
+| Function | Description |
 |-|-|
 | `green` | Colors the text green, default for `DEBUG ` |
 | `cyan` | Colors the text light blue (cyan), default for `INFO` |
