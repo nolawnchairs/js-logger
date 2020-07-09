@@ -1,6 +1,6 @@
 {
   "name": "@nolawnchairs/logger",
-  "version": "2.0.5",
+  "version": "2.1.0",
   "description": "Formatted logger for the console",
   "main": "index.js",
   "keywords": [],
