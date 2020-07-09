@@ -102,7 +102,7 @@ customLogger.info('This is a test message')
 
 ## Expanding
 
-**`Log.expand()`**
+**`Logger.expand()`**
 
 Some objects you want to log are complex data structures with nested arrays and objects. By default, the first argument to any log call is not inspected, but subsequent args added will all be inspected to a reasonable depth. To allow the capability of printing out these objects fully, you can expand the logger.
 
@@ -139,6 +139,8 @@ Sample { name: 'Rick Sanchez',
   sidekick: { name: 'Morty Smith', intelligence: 2 } }
 ```
 ## Forcing Level
+
+**`Logger.force()`**
 
 There may be times where you wish to print an `INFO` level message when your level is set to a higher level such as `WARN` or `ERROR`. This is just sugar for creating a new logger instance with level `DEBUG`
 
