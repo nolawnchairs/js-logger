@@ -101,7 +101,7 @@ export declare interface Colorizers {
   yellow: (text: string) => string
 
   /**
-   * Prints text in ANSI red (default for ERROR)
+   * Prints text in ANSI red (background) and white (foreground) (default for ERROR)
    * 
    * @param {string} text the text
    * @returns {string} the ANSI-colorized text

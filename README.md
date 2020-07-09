@@ -76,7 +76,7 @@ The colorizer object contains static functions to colorize output using ANSI col
 | `green` | Colors the text green, default for `DEBUG ` |
 | `cyan` | Colors the text light blue (cyan), default for `INFO` |
 | `yellow` | Colors the text yellow, default for `WARN` |
-| `red` | Colors the text red, default for `ERROR` |
+| `red` | Colors the text with red background and white text, default for `ERROR` |
 | `grey` | Colors the text grey, default for the date |
 | `custom` | Customizes the color. The first argument is the text to be colored, the second is the ANSI code's value which is between the `[` and the `m`. For `\x1b[41m`, pass `41`, for `\x1b[30;1m`, pass `30;1` |
 | `levelDefault` | Colors the text the default color of the `LogLevel` provided in the first argument. The second (optional argument) is the text to print. This can be any text, but if left undefined, it will print the default level text value (e.g. `INFO `) with the default end padding
