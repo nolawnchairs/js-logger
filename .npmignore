@@ -2,3 +2,5 @@ src/
 README.md
 test.js
 package-lock.json
+tsconfig.json
+.gitignore

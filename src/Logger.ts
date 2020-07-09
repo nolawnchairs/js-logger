@@ -10,21 +10,58 @@ export enum LogLevel {
   Error = 3
 }
 
+// Log entry values
 export interface LogEntry {
   date: Date
   pid: string
-  level: string
+  levelValue: string
+  level: LogLevel
   message: string
 }
 
-const levels = [
-  '\x1b[32mDEBUG\x1b[0m',
-  '\x1b[36mINFO \x1b[0m',
-  '\x1b[33mWARN \x1b[0m',
-  '\x1b[41mERROR\x1b[0m'
+// Colorizer function definitions
+type DefinedColorizer = (text: string) => string
+type CustomColorizer = (text: string, ansiValue: string) => string
+type LevelDefaultColorizer = (level: LogLevel, levelValue?: string) => string
+
+// Colorizer interface
+export interface Colorizers {
+  green: DefinedColorizer
+  cyan: DefinedColorizer
+  yellow: DefinedColorizer
+  red: DefinedColorizer
+  grey: DefinedColorizer
+  custom: CustomColorizer
+  levelDefault: LevelDefaultColorizer
+}
+
+// Colorizers
+const colorizers: Colorizers = {
+  green: (text: string) => '\x1b[32m' + text + '\x1b[0m',
+  cyan: (text: string) => '\x1b[36m' + text + '\x1b[0m',
+  yellow: (text: string) => '\x1b[33m' + text + '\x1b[0m',
+  red: (text: string) => '\x1b[41m' + text + '\x1b[0m',
+  grey: (text: string) => '\x1b[30;1m' + text + '\x1b[0m',
+  custom: (text: string, ansiValue: string) => {
+    return '\x1b[' + ansiValue.toString() + 'm' + text + '\x1b[0m'
+  },
+  levelDefault: (level: LogLevel, text?: string) => {
+    const [levelTextValue, levelColorizer] = levels[level]
+    return levelColorizer(text || levelTextValue)
+  }
+}
+
+// Level meta information
+type LevelMeta = [string, DefinedColorizer]
+const levels: LevelMeta[] = [
+  ['DEBUG', colorizers.green],
+  ['INFO ', colorizers.cyan],
+  ['WARN ', colorizers.yellow],
+  ['ERROR', colorizers.red],
 ]
 
-export type FormatterSupplier = (e: LogEntry) => string
+// Formatter supplier function definition
+export type FormatterSupplier = (e: LogEntry, colorizers: Colorizers) => string
 
 export class Logger {
 
@@ -40,8 +77,11 @@ export class Logger {
    */
   constructor(readonly level: LogLevel, private readonly formatter?: FormatterSupplier) {
     if (!formatter) {
-      this.formatter = e => '\x1b[30;1m' + e.date.toISOString() + '\x1b[0m ' +
-        e.pid + ' ' + e.level + ' | ' + e.message
+      this.formatter = e => {
+        const [levelValue, levelColorizer] = levels[e.level]
+        return colorizers.grey(e.date.toISOString()) + ' ' +
+          e.pid + ' ' + levelColorizer(levelValue) + ' | ' + e.message
+      }
     }
   }
 
@@ -108,16 +148,39 @@ export class Logger {
     return instance
   }
 
+  /**
+   * Clones the instance of the current logger with
+   * one that will print any level regardless of the level
+   * set by default
+   *
+   * @returns {Logger} the new logger instance
+   * @memberof Logger
+   */
+  force(): Logger {
+    return new Logger(LogLevel.Debug, this.formatter)
+  }
+
   private inspect(arg: any): any {
     return this._inspect ? inspect(arg, false, this._inspectDepth, true) : arg
   }
 
+  /**
+   * Builds the log message using the formatter supplied
+   *
+   * @private
+   * @param {LogLevel} level the level to log
+   * @param {*} [message] the message
+   * @returns {string} the formatted message
+   * @memberof Logger
+   */
   private build(level: LogLevel, message?: any): string {
+    const [levelValue] = levels[level]
     return this.formatter({
       date: new Date(),
-      level: levels[level],
+      levelValue,
+      level,
       pid,
       message
-    })
+    }, colorizers)
   }
 }
