@@ -31,7 +31,7 @@ const custom = new Logger(LogLevel.Debug, (entry, colorizer) => {
   ].join(' ')
 })
 
-custom.info('Test info')
+custom.info('Test info %s', 'this is a vararg')
 
 const restricted = new Logger(LogLevel.Error)
 restricted.error('Error message')

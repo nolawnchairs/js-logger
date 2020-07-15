@@ -8,10 +8,10 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/mweiczorek/js-logger"
+    "url": "https://github.com/nolawnchairs/js-logger"
   },
   "bugs": {
-    "url": "https://github.com/mweiczorek/js-logger/issues"
+    "url": "https://github.com/nolawnchairs/js-logger/issues"
   },
   "dependencies": {},
   "devDependencies": {
