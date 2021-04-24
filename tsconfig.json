@@ -3,13 +3,17 @@
     "module": "commonjs",
     "moduleResolution": "node",
     "target": "es6",
+    "lib": [
+      "es2015",
+      "esnext"
+    ],
     "sourceMap": false,
-    "importHelpers": true,
+    "emitDecoratorMetadata": false,
+    "experimentalDecorators": true,
+    "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "removeComments": true,
     "strict": false,
     "noUnusedLocals": false,
-    "noUnusedParameters": false,
     "strictPropertyInitialization": false,
     "outDir": "./lib"
   },

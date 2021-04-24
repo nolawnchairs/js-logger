@@ -13,10 +13,15 @@
   "bugs": {
     "url": "https://github.com/nolawnchairs/js-logger/issues"
   },
-  "dependencies": {},
+  "dependencies": {
+    "sprintf-js": "^1.1.2"
+  },
   "devDependencies": {
+    "@nolawnchairs/utils": "^1.2.1",
     "@types/node": "^14.0.20",
-    "typescript": "^3.9.4"
+    "@types/sprintf-js": "^1.1.2",
+    "tslib": "^2.2.0",
+    "typescript": "^3.9.9"
   },
   "scripts": {
     "test": "node test.js"

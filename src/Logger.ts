@@ -70,7 +70,7 @@ export class Logger {
 
   /**
    * Creates an instance of Logger
-   * 
+   *
    * @param {LogLevel} level the logging level
    * @param {FormatterSupplier} [formatter] the output formatter
    * @memberof Logger
@@ -87,7 +87,7 @@ export class Logger {
 
   /**
    * Emit a debug message to stdout
-   * 
+   *
    * @param {*} [message] the message
    * @param {...any[]} args additional arguments
    * @memberof Logger
