@@ -1,5 +1,5 @@
 
-import { LoggerConfig, LoggerConfigInstance, LoggerConfigProvider, LoggerGlobalConfig } from './Config'
+import { LoggerConfig, LoggerConfigInstance, LoggerConfigProvider, LoggerGlobalConfig, ObjectSerializationStrategy } from './Config'
 import { FormatProvider, Formatters, TextBuilder } from './Format'
 import { LogLevel } from './LogLevel'
 import { mergeOptions } from './Util'
@@ -14,6 +14,7 @@ interface Logger {
 
 const globalLoggers: Map<string, LogImpl> = new Map()
 const defaultConfig: LoggerGlobalConfig = {
+  serializationStrategy: ObjectSerializationStrategy.INSPECT,
   inspectionColor: false,
   inspectionDepth: 3,
   eol: '\n',
