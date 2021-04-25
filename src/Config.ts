@@ -1,5 +1,6 @@
 
 import { FormatProvider } from './Format'
+import { LogLevel } from './LogLevel'
 import { LogWriter } from './Writer'
 
 export type LoggerConfigProvider = (value: string) => LoggerConfigInstance
@@ -20,11 +21,10 @@ export interface LoggerConfig {
   }
 }
 
-export interface LoggerConfigInstance extends Partial<LoggerGlobalConfig> {
+export interface LoggerConfigInstance extends LoggerGlobalConfig {
   enabled: boolean
-  level: number
+  level: LogLevel | number
   writers: LogWriter[]
-  exclusive?: boolean
 }
 
 export enum ObjectSerializationStrategy {

@@ -99,12 +99,14 @@ class LogImpl implements Logger {
   private eol: string
   private formatter: FormatProvider
   private meta?: string
+  private isSingularLevel = false
 
   constructor(properties: LoggerProperties) {
     this.config = properties.config
     this.eol = properties.config.eol
     this.formatter = properties.config.formatter ?? Formatters.defaultFormatter
     this.meta = properties.meta
+    this.isSingularLevel = (Math.log(this.config.level) / Math.log(2)) % 1 === 0
   }
 
   debug(message?: any, ...args: any[]) {
@@ -140,9 +142,9 @@ class LogImpl implements Logger {
   private canPrint(level: LogLevel): boolean {
     if (!this.config.enabled)
       return false
-    return this.config.exclusive
-      ? !!(level & this.config.level)
-      : level >= this.config.level
+    return this.isSingularLevel
+      ? level >= this.config.level
+      : !!(level & this.config.level)
   }
 
   private print(level: LogLevel, text: string) {
