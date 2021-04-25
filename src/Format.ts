@@ -3,6 +3,7 @@ import { inspect } from 'util'
 import { vsprintf } from 'sprintf-js'
 import { ObjectSerializationStrategy, LoggerInstanceConfig } from './Config'
 import { LogLevel, LogLevelEmoji } from './LogLevel'
+import { ANSI_PATTERN } from './Util'
 
 export interface LogEntry {
   date: Date
@@ -119,6 +120,16 @@ export namespace Formatters {
       e.pid,
       e.levelText,
       e.meta ? '| ' + e.meta + ' |' : '|',
-      e.message].join(' ')
+      e.message.replace(ANSI_PATTERN, '')].join(' ')
+  }
+
+  export function jsonFormatter(e: LogEntry): string {
+    return JSON.stringify({
+      date: e.date.toISOString(),
+      pid: e.pid,
+      level: e.levelText.trim(),
+      meta: e.meta ? e.meta : undefined,
+      message: e.message.replace(ANSI_PATTERN, '')
+    })
   }
 }

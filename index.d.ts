@@ -56,6 +56,7 @@ export declare namespace Formatters {
   function colorize(color: AnsiColors, text: string): string;
   function defaultFormatter(e: LogEntry): string;
   function monochromeFormatter(e: LogEntry): string;
+  function jsonFormatter(e: LogEntry): string;
 }
 export declare type WriterInterface = WriteStream | NodeJS.WriteStream;
 export declare type Provider = () => Promise<WriterInterface>;
