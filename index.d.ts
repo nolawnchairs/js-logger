@@ -11,11 +11,21 @@ export declare enum LogLevel {
   ERROR = 8,
   FATAL = 16
 }
+export declare enum LogLevelEmoji {
+  DEBUG = '🐞',
+  INFO = 'ℹ️',
+  WARN = '⚠️',
+  ERROR = '❌',
+  FATAL = '💀',
+}
+export declare const LEVELS_ALL = 31;
 export interface LogEntry {
   date: Date;
   pid: string;
-  levelValue: string;
   level: LogLevel;
+  levelText: string;
+  levelColor: AnsiColors;
+  levelEmoji: LogLevelEmoji;
   message: string;
   meta?: string;
 }

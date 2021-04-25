@@ -2,6 +2,7 @@ module.exports = {
   Log,
   LogWriter,
   LogLevel,
+  LogLevelEmoji,
   LogEntry,
   Formatters,
   FormatProvider,
@@ -11,4 +12,5 @@ module.exports = {
   LoggerGlobalConfig,
   LoggerConfigProvider,
   ObjectSerializationStrategy,
+  LEVELS_ALL,
 } = require('./lib/index')

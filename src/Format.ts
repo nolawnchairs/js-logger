@@ -2,13 +2,15 @@
 import { inspect } from 'util'
 import { vsprintf } from 'sprintf-js'
 import { ObjectSerializationStrategy, LoggerConfigInstance } from './Config'
-import { LogLevel } from './LogLevel'
+import { LogLevel, LogLevelEmoji } from './LogLevel'
 
 export interface LogEntry {
   date: Date
   pid: string
-  levelValue: string
   level: LogLevel
+  levelText: string
+  levelColor: AnsiColors
+  levelEmoji: LogLevelEmoji
   message: string
   meta?: string
 }
@@ -36,13 +38,13 @@ export enum AnsiColors {
 }
 
 // Level meta information
-type LevelMeta = Record<LogLevel, [string, AnsiColors]>
-const levels: LevelMeta = {
-  [LogLevel.DEBUG]: ['DEBUG', AnsiColors.BRIGHT_GREEN],
-  [LogLevel.INFO]: [' INFO', AnsiColors.BRIGHT_BLUE],
-  [LogLevel.WARN]: [' WARN', AnsiColors.BRIGHT_YELLOW],
-  [LogLevel.ERROR]: ['ERROR', AnsiColors.BRIGHT_RED],
-  [LogLevel.FATAL]: ['FATAL', AnsiColors.BG_BRIGHT_RED],
+type LevelMeta = Record<LogLevel, [string, AnsiColors, LogLevelEmoji]>
+const LEVEL_META: LevelMeta = {
+  [LogLevel.DEBUG]: ['DEBUG', AnsiColors.BRIGHT_GREEN, LogLevelEmoji.DEBUG],
+  [LogLevel.INFO]: [' INFO', AnsiColors.BRIGHT_BLUE, LogLevelEmoji.INFO],
+  [LogLevel.WARN]: [' WARN', AnsiColors.BRIGHT_YELLOW, LogLevelEmoji.WARN],
+  [LogLevel.ERROR]: ['ERROR', AnsiColors.BRIGHT_RED, LogLevelEmoji.ERROR],
+  [LogLevel.FATAL]: ['FATAL', AnsiColors.BG_BRIGHT_RED, LogLevelEmoji.FATAL],
 }
 
 const serialziers: Record<ObjectSerializationStrategy, (value: any, props: LoggerConfigInstance) => string> = {
@@ -82,10 +84,13 @@ export namespace Formatters {
   const pid = process.pid
 
   export function createLogEntry(level: LogLevel, message: string, meta?: string): LogEntry {
+    const [levelText, levelColor, levelEmoji] = LEVEL_META[level]
     return {
       date: new Date(),
       level,
-      levelValue: levels[level][0],
+      levelText,
+      levelColor,
+      levelEmoji,
       message,
       pid: pid.toString(10),
       meta,
@@ -97,11 +102,11 @@ export namespace Formatters {
   }
 
   export function defaultFormatter(e: LogEntry): string {
-    const [levelValue, levelColorizer] = levels[e.level]
+    const [, color] = LEVEL_META[e.level]
     return [
       colorize(AnsiColors.GRAY, e.date.toISOString()),
       e.pid,
-      colorize(levelColorizer, levelValue),
+      colorize(color, e.levelText),
       e.meta
         ? colorize(AnsiColors.GRAY, '| ') + colorize(AnsiColors.CYAN, e.meta) + ' ' + colorize(AnsiColors.GRAY, '|')
         : colorize(AnsiColors.GRAY, '|'),
@@ -109,11 +114,10 @@ export namespace Formatters {
   }
 
   export function monochromeFormatter(e: LogEntry): string {
-    const [levelValue] = levels[e.level]
     return [
       e.date.toISOString(),
       e.pid,
-      levelValue,
+      e.levelText,
       e.meta ? ' | ' + e.meta + ' |' : '|',
       e.message].filter(s => !!s).join(' ')
   }

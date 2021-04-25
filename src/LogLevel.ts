@@ -6,3 +6,11 @@ export enum LogLevel {
   ERROR = 8,
   FATAL = 16,
 }
+
+export enum LogLevelEmoji {
+  DEBUG = '🐞',
+  INFO = 'ℹ️',
+  WARN = '⚠️',
+  ERROR = '❌',
+  FATAL = '💀',
+}
