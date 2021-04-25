@@ -50,7 +50,7 @@ class LoggerDefault implements Logger {
     }
   }
 
-  forFeature(name: string, config?: LoggerInstanceConfig): LogImpl {
+  forFeature(name: string, config?: LoggerInstanceConfig): Logger {
     let loggerConfig: LoggerInstanceConfig
     if (!config) {
       if (!this.featureLoggerTemplate)
