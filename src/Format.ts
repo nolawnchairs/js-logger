@@ -118,7 +118,7 @@ export namespace Formatters {
       e.date.toISOString(),
       e.pid,
       e.levelText,
-      e.meta ? ' | ' + e.meta + ' |' : '|',
+      e.meta ? '| ' + e.meta + ' |' : '|',
       e.message].join(' ')
   }
 }
