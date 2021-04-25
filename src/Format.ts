@@ -110,7 +110,7 @@ export namespace Formatters {
       e.meta
         ? colorize(AnsiColors.GRAY, '| ') + colorize(AnsiColors.CYAN, e.meta) + ' ' + colorize(AnsiColors.GRAY, '|')
         : colorize(AnsiColors.GRAY, '|'),
-      e.message].filter(s => !!s).join(' ')
+      e.message].join(' ')
   }
 
   export function monochromeFormatter(e: LogEntry): string {
@@ -119,6 +119,6 @@ export namespace Formatters {
       e.pid,
       e.levelText,
       e.meta ? ' | ' + e.meta + ' |' : '|',
-      e.message].filter(s => !!s).join(' ')
+      e.message].join(' ')
   }
 }
