@@ -64,11 +64,10 @@ export declare class LogWriter {
   get formatterProvider(): FormatProvider;
   write(value: string): Promise<void>;
 }
-export interface LoggerConfigInstance extends Partial<LoggerGlobalConfig> {
+export interface LoggerConfigInstance extends LoggerGlobalConfig {
   enabled: boolean;
-  level: number;
+  level: LogLevel | number;
   writers: LogWriter[];
-  exclusive?: boolean;
 }
 export declare enum ObjectSerializationStrategy {
   OMIT = 0,
