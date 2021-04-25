@@ -131,7 +131,7 @@ The following values can be set to the `global` object, and will provide default
 | ----------- | ----------- | -------- | :--------: |
 | `eol` | string | The end-of-line charachter. Defaults to `\n`  ||
 | `serializationStrategy` | `ObjectSerializationStrategy` | How non-scalar values will be printed. Defaults to `INSPECT` ||
-| `inspectionDepth` | number | The depth of serialization when using the `INSPECT` strategy. Defaults to `3` || 
+| `inspectionDepth` | number | The depth of serialization when using the `INSPECT` strategy. Defaults to `3` [See...](https://nodejs.org/api/util.html#util_util_inspect_object_options)  || 
 | `inspectionColor` | boolean | Used in the `INSPECT` strategy, governs whether or not to color the inspected object ||
 | `formatter` | `FormatProvider` | Defines a custom formatter for each `LogWriters` attached this logger. Note that writers may override this with their own formatter ||
 
