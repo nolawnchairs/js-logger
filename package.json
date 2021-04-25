@@ -1,7 +1,7 @@
 {
   "name": "@nolawnchairs/logger",
-  "version": "3.0.0-rc1",
-  "description": "Formatted logger for the console",
+  "version": "3.0.0-rc2",
+  "description": "Multi-stream formatted logger for NodeJS applications",
   "main": "index.js",
   "keywords": [],
   "author": "Michael Wieczorek",
