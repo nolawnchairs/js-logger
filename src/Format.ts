@@ -1,3 +1,7 @@
+
+import { inspect } from 'util'
+import { vsprintf } from 'sprintf-js'
+import { ObjectSerializationStrategy, LoggerConfigInstance } from './Config'
 import { LogLevel } from './LogLevel'
 
 export interface LogEntry {
@@ -41,10 +45,39 @@ const levels: LevelMeta = {
   [LogLevel.FATAL]: ['FATAL', AnsiColors.BG_BRIGHT_RED],
 }
 
+const serialziers: Record<ObjectSerializationStrategy, (value: any, props: LoggerConfigInstance) => string> = {
+  [ObjectSerializationStrategy.OMIT]: () => '',
+  [ObjectSerializationStrategy.INSPECT]: (value, props) => inspect(value, false, props.inspectionDepth, props.inspectionColor),
+  [ObjectSerializationStrategy.JSON]: value => JSON.stringify(value)
+}
+
 // Formatter supplier function definition
 export type FormatProvider = (e: LogEntry) => string
 
-export namespace LoggerFormat {
+export class TextBuilder {
+  private message: string
+  private args: any[] = []
+  constructor(message: any, args: any[], readonly config: LoggerConfigInstance) {
+    this.args = args
+    if (typeof message === 'string') {
+      this.message = message
+    } else {
+      this.message = '%s'
+      this.args = [message, ...args]
+    }
+  }
+
+  toString(): string {
+    return vsprintf(this.message, this.args.map(a => {
+      const serialize = serialziers[this.config.serializationStrategy]
+      return typeof a === 'object' && serialize
+        ? serialize(a, this.config)
+        : a
+    }))
+  }
+}
+
+export namespace Formatters {
 
   const pid = process.pid
 
@@ -69,7 +102,9 @@ export namespace LoggerFormat {
       colorize(AnsiColors.GRAY, e.date.toISOString()),
       e.pid,
       colorize(levelColorizer, levelValue),
-      e.meta ? colorize(AnsiColors.CYAN, e.meta) + ' ' + colorize(AnsiColors.GRAY, '|') : colorize(AnsiColors.GRAY, '|'),
+      e.meta
+        ? colorize(AnsiColors.GRAY, '| ') + colorize(AnsiColors.CYAN, e.meta) + ' ' + colorize(AnsiColors.GRAY, '|')
+        : colorize(AnsiColors.GRAY, '|'),
       e.message].filter(s => !!s).join(' ')
   }
 
@@ -79,7 +114,7 @@ export namespace LoggerFormat {
       e.date.toISOString(),
       e.pid,
       levelValue,
-      e.meta ? e.meta + ' |' : '|',
+      e.meta ? ' | ' + e.meta + ' |' : '|',
       e.message].filter(s => !!s).join(' ')
   }
 }

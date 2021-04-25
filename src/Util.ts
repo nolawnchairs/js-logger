@@ -11,3 +11,13 @@ export async function assertFile(path: string) {
     }
   }
 }
+
+export function mergeOptions<T = {}>(a: T, b: T): T {
+  let merged = { ...a }
+
+  for (const key in b) {
+    if (merged[key] === undefined || merged[key] === null)
+      merged[key] = b[key]
+  }
+  return merged
+}

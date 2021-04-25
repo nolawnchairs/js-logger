@@ -1,112 +1,99 @@
 
-import { inspect } from 'util'
-import { vsprintf } from 'sprintf-js'
-import { LoggerConfig, LoggerConfigInstance, LoggerConfigProvider, LoggerGlobalConfig, ObjectSerializationStrategy } from './LoggerConfig'
-import { FormatProvider, LoggerFormat } from './LoggerFormat'
+import { LoggerConfig, LoggerConfigInstance, LoggerConfigProvider, LoggerGlobalConfig } from './Config'
+import { FormatProvider, Formatters, TextBuilder } from './Format'
 import { LogLevel } from './LogLevel'
+import { mergeOptions } from './Util'
 
-export namespace Logger {
+interface Logger {
+  debug(message: any, ...args: any[]): void
+  info(message: any, ...args: any[]): void
+  warn(message: any, ...args: any[]): void
+  error(message: any, ...args: any[]): void
+  fatal(message: any, ...args: any[]): void
+}
 
-  type DefaultId = 'module' | 'named'
+const globalLoggers: Map<string, LogImpl> = new Map()
+const defaultConfig: LoggerGlobalConfig = {
+  inspectionColor: false,
+  inspectionDepth: 3,
+  eol: '\n',
+  formatter: Formatters.defaultFormatter
+}
 
-  const globalConfig: LoggerGlobalConfig = {}
-  const globalLoggers: Map<string, Log> = new Map()
-  const providerTemplates: Map<DefaultId, LoggerConfigProvider> = new Map()
+class LoggerDefault implements Logger {
 
-  export function init({ loggers, defaults, ...rest }: LoggerConfig) {
-    for (const logger of Object.keys(loggers)) {
-      const config = loggers[logger]
-      const instance = new Log({
-        config,
-        eol: config.eol ?? rest.eol,
-        formatter: config.formatter ?? rest.formatter,
-        inspectionDepth: config.inspectionDepth ?? 3
+  private globalConfig: LoggerGlobalConfig = {}
+  private featureLoggerTemplate: LoggerConfigProvider
+
+  init(config: LoggerConfig) {
+    if (!config)
+      throw new Error('Configuration object must not be null or undefined')
+    const { global = {}, providers } = config
+    if (!providers)
+      throw new Error('No "providers" object was supplied to Log::init')
+    this.globalConfig = { ...defaultConfig, ...global }
+    for (const logger of Object.keys(providers.globalLoggers)) {
+      const config = providers.globalLoggers[logger](logger)
+      const { eol, inspectionColor, inspectionDepth, ...rest } = config
+      const instance = new LogImpl({
+        config: {
+          ...mergeOptions(this.globalConfig, { eol, inspectionColor, inspectionDepth }),
+          ...rest
+        },
       })
       globalLoggers.set(logger, instance)
     }
-    if (defaults.named)
-      providerTemplates.set('named', defaults.named)
-    if (defaults.module)
-      providerTemplates.set('module', defaults.module)
 
-    globalConfig.eol = rest.eol
-    globalConfig.formatter = rest.formatter
-    globalConfig.inspectionDepth = rest.inspectionDepth
+    if (providers.featureLogger) {
+      this.featureLoggerTemplate = providers.featureLogger
+    }
   }
 
-  export function forFeature(name: string, config?: LoggerConfigInstance): Log {
-    return create('named', name, config)
-  }
-
-  export function forModule(name: string, config?: LoggerConfigInstance): Log {
-    return create('module', name, config)
-  }
-
-  function create(defaultId: DefaultId, meta: string, config?: LoggerConfigInstance): Log {
+  forFeature(name: string, config?: LoggerConfigInstance): LogImpl {
     let loggerConfig: LoggerConfigInstance
     if (!config) {
-      const findConfig = providerTemplates.get(defaultId)
-      if (!findConfig)
-        throw new Error(`Named logger for '${meta}' could not be initialized. No default configuration found`)
-      loggerConfig = findConfig(meta)
+      if (!this.featureLoggerTemplate)
+        throw new Error(`Named logger for '${name}' could not be initialized. No default configuration found`)
+      loggerConfig = this.featureLoggerTemplate(name)
     }
 
-    return new Log({
-      config: loggerConfig,
-      eol: loggerConfig.eol ?? globalConfig.eol,
-      formatter: loggerConfig.formatter ?? globalConfig.formatter,
-      meta,
+    const { eol, inspectionColor, inspectionDepth, formatter, ...rest } = loggerConfig
+    return new LogImpl({
+      meta: name,
+      config: {
+        ...mergeOptions(this.globalConfig, { eol, inspectionColor, inspectionDepth, formatter }),
+        ...rest
+      },
     })
   }
 
-  export function debug(message: any, ...args: any[]) {
-    globalLoggers.forEach(log => log.debug(message, args))
+  debug(message: any, ...args: any[]) {
+    globalLoggers.forEach(log => log.debug(message, ...args))
   }
 
-  export function info(message: any, ...args: any[]) {
-    globalLoggers.forEach(log => log.info(message, args))
+  info(message: any, ...args: any[]) {
+    globalLoggers.forEach(log => log.info(message, ...args))
   }
 
-  export function warning(message: any, ...args: any[]) {
-    globalLoggers.forEach(log => log.warn(message, args))
+  warn(message: any, ...args: any[]) {
+    globalLoggers.forEach(log => log.warn(message, ...args))
   }
 
-  export function error(message: any, ...args: any[]) {
-    globalLoggers.forEach(log => log.error(message, args))
+  error(message: any, ...args: any[]) {
+    globalLoggers.forEach(log => log.error(message, ...args))
   }
 
-  export function fatal(message: any, ...args: any[]) {
-    globalLoggers.forEach(log => log.fatal(message, args))
+  fatal(message: any, ...args: any[]) {
+    globalLoggers.forEach(log => log.fatal(message, ...args))
   }
 }
 
-type LoggerProperties = LoggerGlobalConfig & {
+type LoggerProperties = {
   config: LoggerConfigInstance
   meta?: string
 }
 
-const serialziers: Record<ObjectSerializationStrategy, (value: any, props: LoggerConfigInstance) => string> = {
-  [ObjectSerializationStrategy.OMIT]: () => '',
-  [ObjectSerializationStrategy.INSPECT]: (value, props) => inspect(value, true, props.inspectionDepth, false),
-  [ObjectSerializationStrategy.JSON]: value => JSON.stringify(value)
-}
-
-class TextBuilder {
-  constructor(
-    readonly message: any,
-    readonly args: any[],
-    readonly config: LoggerConfigInstance) { }
-
-  toString(): string {
-    return vsprintf(this.message, this.args.map(a => {
-      return typeof a == 'object'
-        ? serialziers[this.config.serializationStrategy](a, this.config)
-        : a
-    }))
-  }
-}
-
-class Log {
+class LogImpl implements Logger {
 
   private config: LoggerConfigInstance
   private eol: string
@@ -115,8 +102,8 @@ class Log {
 
   constructor(properties: LoggerProperties) {
     this.config = properties.config
-    this.eol = properties.eol ?? '\n'
-    this.formatter = properties.formatter ?? LoggerFormat.defaultFormatter
+    this.eol = properties.config.eol
+    this.formatter = properties.config.formatter ?? Formatters.defaultFormatter
     this.meta = properties.meta
   }
 
@@ -159,7 +146,16 @@ class Log {
   }
 
   private print(level: LogLevel, text: string) {
-    const out = this.formatter(LoggerFormat.createLogEntry(level, text, this.meta))
-    this.config.writers.forEach(w => w.write(out + this.eol))
+    const entry = Formatters.createLogEntry(level, text, this.meta)
+    for (const writer of this.config.writers) {
+      if (writer.formatterProvider) {
+        writer.write(writer.formatterProvider(entry) + this.eol)
+      } else {
+        writer.write(this.formatter(entry) + this.eol)
+      }
+    }
   }
 }
+
+const defaultLogger = new LoggerDefault()
+export { defaultLogger as Log }
