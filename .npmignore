@@ -3,6 +3,8 @@ README.md
 test.js
 package-lock.json
 tsconfig.json
+tslint.json
+*.md
 .gitignore
 temp
 logs

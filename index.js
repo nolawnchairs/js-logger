@@ -1,5 +1,3 @@
-//module.exports = { Logger, LogLevel, LogEntry } = require('./lib/Logger')
-
 module.exports = {
   Log,
   LogWriter,
