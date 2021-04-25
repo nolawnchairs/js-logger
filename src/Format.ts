@@ -1,7 +1,7 @@
 
 import { inspect } from 'util'
 import { vsprintf } from 'sprintf-js'
-import { ObjectSerializationStrategy, LoggerConfigInstance } from './Config'
+import { ObjectSerializationStrategy, LoggerInstanceConfig } from './Config'
 import { LogLevel, LogLevelEmoji } from './LogLevel'
 
 export interface LogEntry {
@@ -47,7 +47,7 @@ const LEVEL_META: LevelMeta = {
   [LogLevel.FATAL]: ['FATAL', AnsiColors.BG_BRIGHT_RED, LogLevelEmoji.FATAL],
 }
 
-const serialziers: Record<ObjectSerializationStrategy, (value: any, props: LoggerConfigInstance) => string> = {
+const serialziers: Record<ObjectSerializationStrategy, (value: any, props: LoggerInstanceConfig) => string> = {
   [ObjectSerializationStrategy.OMIT]: () => '',
   [ObjectSerializationStrategy.INSPECT]: (value, props) => inspect(value, false, props.inspectionDepth, props.inspectionColor),
   [ObjectSerializationStrategy.JSON]: value => JSON.stringify(value)
@@ -59,7 +59,7 @@ export type FormatProvider = (e: LogEntry) => string
 export class TextBuilder {
   private message: string
   private args: any[] = []
-  constructor(message: any, args: any[], readonly config: LoggerConfigInstance) {
+  constructor(message: any, args: any[], readonly config: LoggerInstanceConfig) {
     this.args = args
     if (typeof message === 'string') {
       this.message = message

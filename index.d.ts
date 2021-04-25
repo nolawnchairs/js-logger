@@ -74,7 +74,7 @@ export declare class LogWriter {
   get formatterProvider(): FormatProvider;
   write(value: string): Promise<void>;
 }
-export interface LoggerConfigInstance extends LoggerGlobalConfig {
+export interface LoggerInstanceConfig extends LoggerGlobalConfig {
   enabled: boolean;
   level: LogLevel | number;
   writers: LogWriter[];
@@ -84,7 +84,7 @@ export declare enum ObjectSerializationStrategy {
   JSON = 1,
   INSPECT = 2
 }
-export declare type LoggerConfigProvider = (value: string) => LoggerConfigInstance;
+export declare type LoggerInstanceConfigProvider = (value: string) => LoggerInstanceConfig;
 export interface LoggerGlobalConfig {
   eol?: string;
   formatter?: FormatProvider;
@@ -95,8 +95,8 @@ export interface LoggerGlobalConfig {
 export interface LoggerConfig {
   global?: LoggerGlobalConfig;
   providers: {
-    globalLoggers: Record<string, LoggerConfigProvider>;
-    featureLogger?: LoggerConfigProvider;
+    globalLoggers: Record<string, LoggerInstanceConfigProvider>;
+    featureLogger?: LoggerInstanceConfigProvider;
   };
 }
 export interface Logger {
@@ -108,7 +108,7 @@ export interface Logger {
 }
 declare class LoggerDefault implements Logger {
   init(config: LoggerConfig): void;
-  forFeature(name: string, config?: LoggerConfigInstance): Logger;
+  forFeature(name: string, config?: LoggerInstanceConfig): Logger;
   debug(message: any, ...args: any[]): void;
   info(message: any, ...args: any[]): void;
   warn(message: any, ...args: any[]): void;
@@ -116,7 +116,7 @@ declare class LoggerDefault implements Logger {
   fatal(message: any, ...args: any[]): void;
 }
 export declare type LoggerProperties = LoggerGlobalConfig & {
-  config: LoggerConfigInstance;
+  config: LoggerInstanceConfig;
   meta?: string;
 };
 declare const defaultLogger: LoggerDefault;

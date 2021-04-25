@@ -8,9 +8,9 @@ module.exports = {
   FormatProvider,
   AnsiColors,
   LoggerConfig,
-  LoggerConfigInstance,
+  LoggerInstanceConfig,
   LoggerGlobalConfig,
-  LoggerConfigProvider,
+  LoggerInstanceConfigProvider,
   ObjectSerializationStrategy,
   LEVELS_ALL,
 } = require('./lib/index')

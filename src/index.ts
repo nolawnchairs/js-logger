@@ -1,5 +1,5 @@
 import { Log } from './Log'
-import { LoggerConfig, LoggerConfigInstance, LoggerGlobalConfig, LoggerConfigProvider, ObjectSerializationStrategy } from './Config'
+import { LoggerConfig, LoggerInstanceConfig, LoggerGlobalConfig, LoggerInstanceConfigProvider, ObjectSerializationStrategy } from './Config'
 import { Formatters, FormatProvider, LogEntry, AnsiColors } from './Format'
 import { LogLevel, LogLevelEmoji } from './LogLevel'
 import { LogWriter } from './Writer'
@@ -16,9 +16,9 @@ export {
   FormatProvider,
   AnsiColors,
   LoggerConfig,
-  LoggerConfigInstance,
+  LoggerInstanceConfig,
   LoggerGlobalConfig,
-  LoggerConfigProvider,
+  LoggerInstanceConfigProvider,
   ObjectSerializationStrategy,
   LEVELS_ALL,
 }

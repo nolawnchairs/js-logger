@@ -1,5 +1,5 @@
 
-import { LoggerConfig, LoggerConfigInstance, LoggerConfigProvider, LoggerGlobalConfig, ObjectSerializationStrategy } from './Config'
+import { LoggerConfig, LoggerInstanceConfig, LoggerInstanceConfigProvider, LoggerGlobalConfig, ObjectSerializationStrategy } from './Config'
 import { FormatProvider, Formatters, TextBuilder } from './Format'
 import { LogLevel } from './LogLevel'
 import { mergeOptions } from './Util'
@@ -24,7 +24,7 @@ const defaultConfig: LoggerGlobalConfig = {
 class LoggerDefault implements Logger {
 
   private globalConfig: LoggerGlobalConfig = {}
-  private featureLoggerTemplate: LoggerConfigProvider
+  private featureLoggerTemplate: LoggerInstanceConfigProvider
 
   init(config: LoggerConfig) {
     if (!config)
@@ -50,8 +50,8 @@ class LoggerDefault implements Logger {
     }
   }
 
-  forFeature(name: string, config?: LoggerConfigInstance): LogImpl {
-    let loggerConfig: LoggerConfigInstance
+  forFeature(name: string, config?: LoggerInstanceConfig): LogImpl {
+    let loggerConfig: LoggerInstanceConfig
     if (!config) {
       if (!this.featureLoggerTemplate)
         throw new Error(`Named logger for '${name}' could not be initialized. No default configuration found`)
@@ -90,13 +90,13 @@ class LoggerDefault implements Logger {
 }
 
 type LoggerProperties = {
-  config: LoggerConfigInstance
+  config: LoggerInstanceConfig
   meta?: string
 }
 
 class LogImpl implements Logger {
 
-  private config: LoggerConfigInstance
+  private config: LoggerInstanceConfig
   private eol: string
   private formatter: FormatProvider
   private meta?: string

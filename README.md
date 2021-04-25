@@ -16,7 +16,7 @@ yarn add @nolawnchairs/logger
 
 As opposed to v2, there is more boilerplate to configure, since we now provide multiple logging environments that can each write to multiple output streams.
 
-Set up your logging environments using the `init` method. The `providers.globalLoggers` object must contain one object where the key is any unique name you like (it's how the internal registry identifies it), and the value is a function that returns the configuration for this logger:
+Set up your logging environments using the `init` method. The `providers.globalLoggers` object must contain at least one object that defines the function providing the configuration for this logger:
 
 ```javascript
 Log.init({
@@ -35,9 +35,7 @@ Log.init({
 })
 ```
 
-In the above example, we define a single `globalLogger`. The name we give this logger is `development`, and it returns a `LoggerConfigInstance` object. Here, the `enabled` key is set based on whether or not we're in development mode, we set the `level` to `DEBUG`, set a serialization strategy (which dictates how non-scalar values are treated when printing), and an array of `LogWriter` instances that define where the logging output goes.
-
-To log, we simply call the desired level with a message:
+In the above example, we define a single `globalLogger`. The name we give this logger is `development`, and it returns a `LoggerInstanceConfig` object. Here, the `enabled` key is set based on whether or not we're in development mode, we set the `level` to `DEBUG`, set a serialization strategy (which dictates how non-scalar values are treated when printing), and an array of `LogWriter` instances that define where the logging output goes.
 
 
 
@@ -72,7 +70,7 @@ Log.init({
 })
 ```
 
-In this example, we set `enabled` to true, but set the `level` dependent on the `NODE_ENV` value. Instead of a single `LogWriter`, we specify two - one for the console, and one that logs to a file. Note that we're using a `formatProvider` to write monochrome, since we don't normally want ANSI colors present in our disk logs.
+In this example, we set `enabled` to true, but set the `level` dependent on the `NODE_ENV` value. Instead of a single `LogWriter`, we specify two - one for the console, and one that logs to a file. Note that we're using a `formatProvider` to write monochrome, since we normally don't want ANSI colors present in our disk logs.
 
 Creating a Feature Logger is simple. We call the `forFeature` method on the main `Log` interface as such:
 
@@ -117,10 +115,10 @@ Configuration is set in the `Log.init()` method, and has the following structure
   global: LoggerGlobalConfig
   providers: {
     globalLoggers: {
-      yourLoggername: () => LoggerConfigInstance
-      anotherLogger: () => LoggerConfigInstance
+      yourLoggername: () => LoggerInstanceConfig
+      anotherLogger: () => LoggerInstanceConfig
     }
-    featureLogger: () => LoggerConfigInstance
+    featureLogger: () => LoggerInstanceConfig
   }
 }
 ```
@@ -135,12 +133,12 @@ The following values can be set to the `global` object, and will provide default
 | `serializationStrategy` | `ObjectSerializationStrategy` | How non-scalar values will be printed. Defaults to `INSPECT` ||
 | `inspectionDepth` | number | The depth of serialization when using the `INSPECT` strategy. Defaults to `3` || 
 | `inspectionColor` | boolean | Used in the `INSPECT` strategy, governs whether or not to color the inspected object ||
-| `formatter` | `FormatProvider` | Defines a custom formatter for all `LogWriters` for this logger. Note that writers can override this setting with their own formatting ||
+| `formatter` | `FormatProvider` | Defines a custom formatter for each `LogWriters` attached this logger. Note that writers may override this with their own formatter ||
 
 
 ---
 
-### `interface` LoggerConfigInstance
+### `interface` LoggerInstanceConfig
 
 Each individial logger you define must be configured with the following properties.
 
@@ -148,10 +146,10 @@ Each individial logger you define must be configured with the following properti
 | Property | Type | Description | Required |
 | ----------- | ----------- | -------- | :--------: |
 | `enabled` | boolean | Whether this logger will produce data | ✔️ |
-| `level` | `LogLevel or number` | The level this logger will adhere to. Use a `LogLevel` enum value or an or'ed mask of multiple levels to use in unison<sup>1</sup> | ✔️ |
-| `writers` | `LogWriter[]` | An array of `LogWriter` instances to use with this logger |✔️| 
+| `level` | `LogLevel` | The level to which this logger will adhere. Use a `LogLevel` enum value or an `or`'ed bitmask of multiple levels to use in unison<sup>1</sup> | ✔️ |
+| `writers` | `LogWriter[]` | An array of `LogWriter` instances this logger will use |✔️| 
 
-In addition to the above properties, the `LoggerConfigInstance` will accept any of the properties defined in `LoggerGlobalConfig`, which will override any default values you set in `global`.
+In addition to the above properties, the `LoggerInstanceConfig` will accept any of the properties defined in `LoggerGlobalConfig`, which will override any default values you set in `global`.
 
 
 #### Notes

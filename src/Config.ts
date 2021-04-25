@@ -3,7 +3,7 @@ import { FormatProvider } from './Format'
 import { LogLevel } from './LogLevel'
 import { LogWriter } from './Writer'
 
-export type LoggerConfigProvider = (value: string) => LoggerConfigInstance
+export type LoggerInstanceConfigProvider = (value: string) => LoggerInstanceConfig
 
 export interface LoggerGlobalConfig {
   eol?: string
@@ -16,12 +16,12 @@ export interface LoggerGlobalConfig {
 export interface LoggerConfig {
   global?: LoggerGlobalConfig
   providers: {
-    globalLoggers: Record<string, LoggerConfigProvider>
-    featureLogger?: LoggerConfigProvider
+    globalLoggers: Record<string, LoggerInstanceConfigProvider>
+    featureLogger?: LoggerInstanceConfigProvider
   }
 }
 
-export interface LoggerConfigInstance extends LoggerGlobalConfig {
+export interface LoggerInstanceConfig extends LoggerGlobalConfig {
   enabled: boolean
   level: LogLevel | number
   writers: LogWriter[]
