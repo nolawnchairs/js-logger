@@ -162,3 +162,129 @@ In addition to the above properties, the `LoggerInstanceConfig` will accept any 
 ```
 The above configuration will ONLY print `INFO` or `ERROR` messages, and nothing else
 
+---
+
+## Formatters
+
+Formatters define how the logging messages are structured in output. There are three formatters included by default:
+
+### `Fromatters.defaultFormatter`
+
+`defaultFormatter` produces colored formatting, ideal for console streams:
+
+```
+// Global
+2021-04-25T18:48:35.409Z 45532  INFO | Testing 123
+
+// Feature
+2021-04-25T18:48:35.409Z 45532  INFO | FeatureName | Testing 123
+```
+
+### `Fromatters.monochromeFormatter`
+
+`monochromeFormatter` produces the same output as the `defaultFormatter`, but without the coloring
+
+### `Fromatters.jsonFormatter`
+
+`jsonFormatter` produces a JSON object for each line printed. Useful for file logging where extra processing or analysis may be required
+
+```
+# Global
+{"date":"2021-04-26T14:21:55.392Z","pid":"1031654","level":"INFO","message":"Testing 123"}
+
+# Feature
+{"date":"2021-04-26T14:21:55.392Z","pid":"1031654","level":"INFO","meta":"FeatureName","message":"Testing 123"}
+```
+
+## Custom Formatters
+
+You can create a custom formatter by defining a function that accepts a `LogEntry` object and returns a string. You can include the formatter inside the `LoggerInstanceConfig`.
+
+### `type` FormatterProvider
+
+
+`function (e: LogEntry) => string`
+
+```javascript
+{
+  enabled: true,
+  level: LogLevel.INFO,
+  formatter: (e: LogEntry) => {
+    return `${e.date.toIsoString()} - ${e.levelText} - ${e.message}`
+  },
+  writers: [...]
+}
+```
+
+### `interface` LogEntry
+
+The `LogEntry` object is passed to every formatter function and includes the following data required to print logs:
+
+
+| Property | Type | Description |
+|---|---|---|
+|`date` | `Date` | The date object referencing the time the log event occurred |
+|`pid`| string | The process ID of the running process, in string format |
+|`level`|`LogLevel` | The `LogLevel` enum value of the log event |
+|`levelText` | string | The text representation of the level, in CAPS. Note that `INFO` and `WARN` are left-padded with one empty space to accommodate symmetry |
+|`levelColor` | `AnsiColor` | The `AnsiColor` enum value of the default color for the log event's level |
+|`levelEmoji` | char | The emoji representing the log level for those who like to spice up their logs |
+|`message` | string | The formatted log message |
+|`meta` | string | Only provided for Feature Loggers, the string value passed as the `name` argument |
+
+
+
+## Log Writers
+
+Each logger you create can include one or more `LogWriter`s that produce the logs to an output stream.
+
+
+
+### `LogWriter.stdout(options?: WriterOptions)`
+
+Prints to stdout
+
+### `LogWriter.stderr(options?: WriterOptions)`
+
+Prints to stderr
+
+### `LogWriter.file(file: string, options?: FileWriterOptions)`
+Prints to a file. The `file` argument is required and must be the path to the writable log file. If this file does not exist, it will be automatically created for you.
+
+> File writers will attempt to re-use existing opened write streams, which are indexed by the resolved file path parameter. 
+
+When defining Feature Loggers, either inline or in the global configuration, you can set the log file name within the definition. It is recommended that you use consistent absolute paths to avoid multiple write streams to the same files. All paths passed to the `LogWriter.file` function are normalized using the `path.resolve` function provided by NodeJS.
+
+```javascript
+  featureLogger: name => ({
+    enabled: !IS_DEV,
+    level: LogLevel.ERROR,
+    formatter: Formatters.monochromeFormatter,
+    writers: [
+      LogWriter.file(`${ROOT}/logs/feature.${name}.log`),
+    ]
+  })
+
+```
+
+---
+
+## Writer Options
+
+Writers can accept an options object which is optional, and all properties provided are also optional
+
+### `object` WriterOptions
+
+| Property | Type | Description |
+|---|---|---|
+| `formatter` | `FormatProvider` | The function that builds the message from the `LogEntry` object provided |
+
+### `object` FileWriterOptions
+
+The file writer takes an options object with two additional optional properties:
+
+| Property | Type | Description |
+|---|---|---|
+| `mode` | number | The permissions for the file being written to. Defaults to `644` |
+| `encoding` | string (`BufferEncoding`) | The encoding |
+
