@@ -1,38 +1,43 @@
-const { Logger, LogLevel } = require(".")
-const log = new Logger(LogLevel.Debug)
+const path = require('path')
+const { LogLevel, Log, ObjectSerializationStrategy, Formatters, LogWriter } = require(".")
 
-const sample = {
-  name: 'Rick Sanchez',
-  intelligence: 100,
-  sidekick: {
-    name: 'Morty Smith',
-    intelligence: 2,
+const IS_DEV = process.env.NODE_ENV !== 'production'
+const ROOT = path.resolve(__dirname)
+
+Log.init({
+  global: {
+    inspectionColor: true,
   },
-  idiot: {
-    name: 'Jerry Smith',
-    intelligence: -10
+  providers: {
+    globalLoggers: {
+      development: () => ({
+        enabled: IS_DEV,
+        level: LogLevel.DEBUG,
+        serializationStrategy: ObjectSerializationStrategy.INSPECT,
+        writers: [
+          LogWriter.stdout(),
+          LogWriter.file(`${ROOT}/logs/stdout.log`, { formatter: Formatters.jsonFormatter })
+        ]
+      })
+    },
+    featureLogger: () => ({
+      enabled: true,
+      level: IS_DEV ? LogLevel.DEBUG : LogLevel.ERROR,
+      serializationStrategy: ObjectSerializationStrategy.INSPECT,
+      writers: [
+        LogWriter.stdout({ formatProvider: (e) => `${e.message}` }),
+        LogWriter.file(`${ROOT}/logs/named.log`, { formatter: Formatters.monochromeFormatter }),
+      ]
+    })
   }
-}
-
-log.debug('Debug Message')
-log.info('Info message')
-log.warn('Warning message')
-log.error('Error message')
-log.expand().info('Expanded message', sample)
-
-const custom = new Logger(LogLevel.Debug, (entry, colorizer) => {
-  return [
-    `[${colorizer.levelDefault(entry.level, entry.levelValue.charAt(0))}]`,
-    colorizer.grey(entry.date.toISOString()),
-    '>>',
-    entry.pid,
-    '|',
-    entry.message
-  ].join(' ')
 })
 
-custom.info('Test info %s', 'this is a vararg')
-
-const restricted = new Logger(LogLevel.Error)
-restricted.error('Error message')
-restricted.force().info('Info message in logger set to ERROR')
+Log.info('Testing %s', 123)
+Log.info({ stuff: [3, 4] })
+Log.info('Testing Info %s', { value: true, other: 'things' })
+const featureLogger = Log.forFeature('LoggerProvider')
+featureLogger.info('This is a test for debug %s', 'a string')
+featureLogger.info('This is for info')
+featureLogger.warn('This is a test for a warning')
+featureLogger.error('This is a test for an error')
+featureLogger.fatal('This is a test for a fatal error')

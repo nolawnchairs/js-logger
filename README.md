@@ -1,153 +1,296 @@
-# Simple Logger
+# Logger v3
 
 [![npm version](https://badge.fury.io/js/%40nolawnchairs%2Flogger.svg)](https://badge.fury.io/js/%40nolawnchairs%2Flogger)
 
-A simple, zero-dependency NodeJS logger with customizable colors and output format to use across your entire Node app. Fun!
+Version 3.x is incompatible with 2.x and 1.x. Note that this project is more or less an "in-house" tool, so no guarantees.
 
-Version 2.x is not backwards-compatible with versions 1.x
+For v2 docs, go [here](V2.md)
 
-### Install
+## Install
 ```
 npm i @nolawnchairs/logger
 yarn add @nolawnchairs/logger
 ```
 
-### Usage
+## Setting Logging Up
 
-```
-import { Logger, LogLevel } from '@nolawnchairs/logger
+As opposed to v2, there is more boilerplate to configure, since we now provide multiple logging environments that can each write to multiple output streams.
 
-const logger = new Logger(LogLevel.Debug)
+Set up your logging environments using the `init` method. The `providers.globalLoggers` object must contain at least one object that defines the function providing the configuration for this logger:
 
-logger.info('this is an info message')
-logger.error('this is an ERROR level logging')
-```
-
-Since under the hood, this is simply an abstraction over `console.log` and `console.error`, you can add string formatting to the first argument
-```
-logger.info('You can use variables like this: %d', 42)
-...
-
-2020-05-27T19:45:58.468Z 19027 INFO  | You can use variables like this: 42
-```
-
-### Format
-
-The default format is as follows:
-
-```
-logger.info('This is the message!')
-...
-
-2020-05-27T19:45:58.468Z 19027 INFO  | This is the message!
-```
-
-Logging format can be customized by using the second constructor parameter, which is a function that provides two arguments: `entry` and `colorizer`
-
-
-```
-const logger = new Logger(LogLevel.Debug, (entry, colorizer) => {
-  return `[${e.levelValue.trim()}] - ${e.date.toIsoString()} ${e.pid} ${e.message}`
+```javascript
+Log.init({
+  providers: {
+    globalLoggers: {
+      development: () => ({
+        enabled: process.env.NODE_ENV === 'development',
+        level: LogLevel.DEBUG,
+        serializationStrategy: ObjectSerializationStrategy.INSPECT,
+        writers: [
+          LogWriter.stdout()
+        ]
+      })
+    }
+  }
 })
-
-logger.info('This is the message!')
-...
-
-[INFO] 2020-05-27T19:45:58.468Z 19027 This is the message!
 ```
 
-### LogEntry
-The log entry contains the following values:
-
-| Key | Type | Description |
-|-|-|-|
-| `date`| Date | Javascript Date object |
-| `level` | LogLevel | `LogLevel` enum value |
-| `levelValue` | string | string representation of the logging level. The INFO and WARN strings are end-padded with a space for symmetry with ERROR and DEBUG |
-| `pid` | string | string value of process ID |
-| `message` | string | the formatted message |
+In the above example, we define a single `globalLogger`. The name we give this logger is `development`, and it returns a `LoggerInstanceConfig` object. Here, the `enabled` key is set based on whether or not we're in development mode, we set the `level` to `DEBUG`, set a serialization strategy (which dictates how non-scalar values are treated when printing), and an array of `LogWriter` instances that define where the logging output goes.
 
 
-### Colorizer
-The colorizer object contains static functions to colorize output using ANSI colors
 
-| Function | Description |
-|-|-|
-| `green` | Colors the text green, default for `DEBUG ` |
-| `cyan` | Colors the text light blue (cyan), default for `INFO` |
-| `yellow` | Colors the text yellow, default for `WARN` |
-| `red` | Colors the text with red background and white text, default for `ERROR` |
-| `grey` | Colors the text grey, default for the date |
-| `custom` | Customizes the color. The first argument is the text to be colored, the second is the ANSI code's value which is between the `[` and the `m`. For `\x1b[41m`, pass `41`, for `\x1b[30;1m`, pass `30;1` |
-| `levelDefault` | Colors the text the default color of the `LogLevel` provided in the first argument. The second (optional argument) is the text to print. This can be any text, but if left undefined, it will print the default level text value (e.g. `INFO `) with the default end padding
+## Global vs Feature Loggers
 
-An example using the custom formatter that prints the first character of the level only, followed by the date, pid a pipe, then the message:
+Global loggers are availble throughout your project and are logged to using the standard `Log` interface as such:
 
+```javascript
+Log.info('This is a test message')
 ```
-const customLogger = new Logger(LogLevel.Debug, (entry, colorizer) => {
-  return [
-    `[${colorizer.levelDefault(entry.level, entry.levelValue.charAt(0))}]`,
-    colorizer.grey(entry.date.toISOString()),
-    entry.pid,
-    '|',
-    entry.message
-  ].join(' ')
+
+Feature Loggers are only available within the class or module in which they are defined, and accept a `string` value that will identify where the message came from. This is useful in larger projects, since the message will give you context as to where it was printed. 
+
+Feature Loggers require configuration just like Global Loggers do. You can either pass configuration to each one you create, or you can create a default configuration for all Feature Loggers that don't provide configuration themselves:
+
+```javascript
+const IS_DEV = process.env.NODE_ENV === 'development'
+
+Log.init({
+  providers: {
+    globalLoggers: {...},
+    featureLogger: name => ({
+      enabled: true,
+      level: IS_DEV ? LogLevel.DEBUG : LogLevel.ERROR,
+      serializationStrategy: ObjectSerializationStrategy.INSPECT,
+      writers: [
+        LogWriter.stdout(),
+        LogWriter.file(`${ROOT}/logs/feature.${name}.log`, { formatProvider: Formatters.monochromeFormatter }),
+      ]
+    })  
+  }
 })
-
-customLogger.info('This is a test message')
-...
-
-[I] 2020-07-09T20:57:24.670Z 26816 | This is a test message
 ```
 
-## Expanding
+In this example, we set `enabled` to true, but set the `level` dependent on the `NODE_ENV` value. Instead of a single `LogWriter`, we specify two - one for the console, and one that logs to a file. Note that we're using a `formatProvider` to write monochrome, since we normally don't want ANSI colors present in our disk logs.
 
-**`Logger.expand()`**
+Creating a Feature Logger is simple. We call the `forFeature` method on the main `Log` interface as such:
 
-Some objects you want to log are complex data structures with nested arrays and objects. By default, the first argument to any log call is not inspected, but subsequent args added will all be inspected to a reasonable depth. To allow the capability of printing out these objects fully, you can expand the logger.
+```javascript
+const logger = Log.forFeature('SomeClassName')
+logger.info('This is from a class or module')
+```
+
+---
+### `enum` LogLevel
+
+The `LogLevel` enum contains the following values:
+
+* `DEBUG`
+* `INFO`
+* `WARN`
+* `ERROR`
+* `FATAL`
+
+Each logger instance contains idential methods for each:
+`debug`, `info`, `warn`, `error` and `fatal`
+
+---
+### `enum` ObjectSerializationStrategy
+
+This setting will govern how non-scalar (objects, classes and arrays) are printed. The `ObjectSerializationStrategy` enum contains the following values:
+
+* `OMIT` - the value is ignored
+* `JSON` - the value is serialized into JSON
+* `INSPECT` - the value is expanded to a readable format. This is the method used my the default `console.log` implementation
+
+---
+
+## Configuration
+
+Each logger we create requires its configuration to be set. We define these in the `init` method of the main `Log` interface, or individually for Feature Loggers should they require custom configuration than the default provided in `init`
+
+Configuration is set in the `Log.init()` method, and has the following structure:
 
 ```
-const sample = {
-  name: 'Rick Sanchez',
-  intelligence: 10,
-  sidekick: {
-    name: 'Morty Smith',
-    intelligence: 2,
+{
+  global: LoggerGlobalConfig
+  providers: {
+    globalLoggers: {
+      yourLoggername: () => LoggerInstanceConfig
+      anotherLogger: () => LoggerInstanceConfig
+    }
+    featureLogger: () => LoggerInstanceConfig
   }
 }
-
-Log.info(sample)
-...
-
-[object Object]
-
-Log.expand().info(sample)
-...
-{ name: 'Rick Sanchez',
- intelligence: 10,
- sidekick: { name: 'Morty Smith', intelligence: 2 } }
 ```
 
-All varargs are already expanded by default. This has a limited depth of `2`, so you can expand to the desired depth. Circular references are always represented as `[Circular]`.
+### `interface` LoggerGlobalConfig
+
+The following values can be set to the `global` object, and will provide default values to all your other loggers
+
+| Property | Type | Description | Required |
+| ----------- | ----------- | -------- | :--------: |
+| `eol` | string | The end-of-line charachter. Defaults to `\n`  ||
+| `serializationStrategy` | `ObjectSerializationStrategy` | How non-scalar values will be printed. Defaults to `INSPECT` ||
+| `inspectionDepth` | number | The depth of serialization when using the `INSPECT` strategy. Defaults to `3` [See...](https://nodejs.org/api/util.html#util_util_inspect_object_options)  || 
+| `inspectionColor` | boolean | Used in the `INSPECT` strategy, governs whether or not to color the inspected object ||
+| `formatter` | `FormatProvider` | Defines a custom formatter for each `LogWriters` attached this logger. Note that writers may override this with their own formatter ||
+
+
+---
+
+### `interface` LoggerInstanceConfig
+
+Each individial logger you define must be configured with the following properties.
+
+
+| Property | Type | Description | Required |
+| ----------- | ----------- | -------- | :--------: |
+| `enabled` | boolean | Whether this logger will produce data | ✔️ |
+| `level` | `LogLevel` | The level to which this logger will adhere. Use a `LogLevel` enum value or an `or`'ed bitmask of multiple levels to use in unison<sup>1</sup> | ✔️ |
+| `writers` | `LogWriter[]` | An array of `LogWriter` instances this logger will use |✔️| 
+
+In addition to the above properties, the `LoggerInstanceConfig` will accept any of the properties defined in `LoggerGlobalConfig`, which will override any default values you set in `global`.
+
+
+#### Notes
+<sup>1</sup> Specifying a single level will print anything from the defined level, **UP**. Meaning that a `WARN` level will print `WARN`, `ERROR` and `FATAL`, but not `INFO` or `DEBUG`. You can, however, define log level in a non-contiguous manner by masking two levels together:
+
+```javascript
+{
+  level: LogLevel.INFO | LogLevel.ERROR
+}
+```
+The above configuration will ONLY print `INFO` or `ERROR` messages, and nothing else
+
+---
+
+## Formatters
+
+Formatters define how the logging messages are structured in output. There are three formatters included by default:
+
+### `Fromatters.defaultFormatter`
+
+`defaultFormatter` produces colored formatting, ideal for console streams:
 
 ```
-Log.info('Sample', sample)
-...
+// Global
+2021-04-25T18:48:35.409Z 45532  INFO | Testing 123
 
-Sample { name: 'Rick Sanchez',
-  intelligence: 10,
-  sidekick: { name: 'Morty Smith', intelligence: 2 } }
-```
-## Forcing Level
-
-**`Logger.force()`**
-
-There may be times where you wish to print an `INFO` level message when your level is set to a higher level such as `WARN` or `ERROR`. This is just sugar for creating a new logger instance with level `DEBUG`
-
-```
-logger.force().info('This is an info message that is guaranteed to print')
+// Feature
+2021-04-25T18:48:35.409Z 45532  INFO | FeatureName | Testing 123
 ```
 
-### License
-Use and abuse it however you like
-	 
+### `Fromatters.monochromeFormatter`
+
+`monochromeFormatter` produces the same output as the `defaultFormatter`, but without the coloring
+
+### `Fromatters.jsonFormatter`
+
+`jsonFormatter` produces a JSON object for each line printed. Useful for file logging where extra processing or analysis may be required
+
+```
+# Global
+{"date":"2021-04-26T14:21:55.392Z","pid":"1031654","level":"INFO","message":"Testing 123"}
+
+# Feature
+{"date":"2021-04-26T14:21:55.392Z","pid":"1031654","level":"INFO","meta":"FeatureName","message":"Testing 123"}
+```
+
+### `Formatters.colorize(color: AnsiColors, text: string)`
+
+`returns string`
+
+This is a convenience function to colorize text. It takes an `AnsiColors` enum value and the text to apply the color to. The standard `AnsiColors.RESET` is applied at the end of the string
+
+## Custom Formatters
+
+You can create a custom formatter by defining a function that accepts a `LogEntry` object and returns a string. You can include the formatter inside the `LoggerInstanceConfig`.
+
+### `type` FormatterProvider
+
+
+`function (e: LogEntry) => string`
+
+```javascript
+{
+  enabled: true,
+  level: LogLevel.INFO,
+  formatter: (e: LogEntry) => {
+    return `${e.date.toIsoString()} - ${e.levelText} - ${e.message}`
+  },
+  writers: [...]
+}
+```
+
+### `interface` LogEntry
+
+The `LogEntry` object is passed to every formatter function and includes the following data required to print logs:
+
+
+| Property | Type | Description |
+|---|---|---|
+|`date` | `Date` | The date object referencing the time the log event occurred |
+|`pid`| string | The process ID of the running process, in string format |
+|`level`|`LogLevel` | The `LogLevel` enum value of the log event |
+|`levelText` | string | The text representation of the level, in CAPS. Note that `INFO` and `WARN` are left-padded with one empty space to accommodate symmetry |
+|`levelColor` | `AnsiColors` | The `AnsiColors` enum value of the default color for the log event's level |
+|`levelEmoji` | char | The emoji representing the log level for those who like to spice up their logs |
+|`message` | string | The formatted log message |
+|`meta` | string | Only provided for Feature Loggers, the string value passed as the `name` argument |
+
+
+
+## Log Writers
+
+Each logger you create can include one or more `LogWriter`s that produce the logs to an output stream.
+
+
+
+### `LogWriter.stdout(options?: WriterOptions)`
+
+Prints to stdout
+
+### `LogWriter.stderr(options?: WriterOptions)`
+
+Prints to stderr
+
+### `LogWriter.file(file: string, options?: FileWriterOptions)`
+Prints to a file. The `file` argument is required and must be the path to the writable log file. If this file does not exist, it will be automatically created for you.
+
+> File writers will attempt to re-use existing opened write streams, which are indexed by the resolved file path parameter. 
+
+When defining Feature Loggers, either inline or in the global configuration, you can set the log file name within the definition. It is recommended that you use consistent absolute paths to avoid multiple write streams to the same files. All paths passed to the `LogWriter.file` function are normalized using the `path.resolve` function provided by NodeJS.
+
+```javascript
+  featureLogger: name => ({
+    enabled: !IS_DEV,
+    level: LogLevel.ERROR,
+    formatter: Formatters.monochromeFormatter,
+    writers: [
+      LogWriter.file(`${ROOT}/logs/feature.${name}.log`),
+    ]
+  })
+
+```
+
+---
+
+## Writer Options
+
+Writers can accept an options object which is optional, and all properties provided are also optional
+
+### `object` WriterOptions
+
+| Property | Type | Description |
+|---|---|---|
+| `formatter` | `FormatProvider` | The function that builds the message from the `LogEntry` object provided |
+
+### `object` FileWriterOptions
+
+The file writer takes an options object with two additional optional properties:
+
+| Property | Type | Description |
+|---|---|---|
+| `mode` | number | The permissions for the file being written to. Defaults to `644` |
+| `encoding` | string (`BufferEncoding`) | The encoding |
+

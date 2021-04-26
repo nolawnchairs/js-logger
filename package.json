@@ -1,7 +1,7 @@
 {
   "name": "@nolawnchairs/logger",
-  "version": "2.1.1",
-  "description": "Formatted logger for the console",
+  "version": "3.0.0",
+  "description": "Multi-stream formatted logger for NodeJS applications",
   "main": "index.js",
   "keywords": [],
   "author": "Michael Wieczorek",
@@ -13,10 +13,14 @@
   "bugs": {
     "url": "https://github.com/nolawnchairs/js-logger/issues"
   },
-  "dependencies": {},
+  "dependencies": {
+    "sprintf-js": "^1.1.2"
+  },
   "devDependencies": {
     "@types/node": "^14.0.20",
-    "typescript": "^3.9.4"
+    "@types/sprintf-js": "^1.1.2",
+    "tslib": "^2.2.0",
+    "typescript": "^3.9.9"
   },
   "scripts": {
     "test": "node test.js"

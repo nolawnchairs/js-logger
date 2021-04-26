@@ -1,1 +1,16 @@
-module.exports = { Logger, LogLevel, LogEntry } = require('./lib/Logger')
+module.exports = {
+  Log,
+  LogWriter,
+  LogLevel,
+  LogLevelEmoji,
+  LogEntry,
+  Formatters,
+  FormatProvider,
+  AnsiColors,
+  LoggerConfig,
+  LoggerInstanceConfig,
+  LoggerGlobalConfig,
+  LoggerInstanceConfigProvider,
+  ObjectSerializationStrategy,
+  LEVELS_ALL,
+} = require('./lib/index')

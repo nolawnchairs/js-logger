@@ -1,6 +1,9 @@
 src/
-README.md
+*.md
 test.js
 package-lock.json
 tsconfig.json
+tslint.json
 .gitignore
+temp
+logs
