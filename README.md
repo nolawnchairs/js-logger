@@ -196,6 +196,12 @@ Formatters define how the logging messages are structured in output. There are t
 {"date":"2021-04-26T14:21:55.392Z","pid":"1031654","level":"INFO","meta":"FeatureName","message":"Testing 123"}
 ```
 
+### `Formatters.colorize(color: AnsiColors, text: string)`
+
+`returns string`
+
+This is a convenience function to colorize text. It takes an `AnsiColors` enum value and the text to apply the color to. The standard `AnsiColors.RESET` is applied at the end of the string
+
 ## Custom Formatters
 
 You can create a custom formatter by defining a function that accepts a `LogEntry` object and returns a string. You can include the formatter inside the `LoggerInstanceConfig`.
@@ -227,7 +233,7 @@ The `LogEntry` object is passed to every formatter function and includes the fol
 |`pid`| string | The process ID of the running process, in string format |
 |`level`|`LogLevel` | The `LogLevel` enum value of the log event |
 |`levelText` | string | The text representation of the level, in CAPS. Note that `INFO` and `WARN` are left-padded with one empty space to accommodate symmetry |
-|`levelColor` | `AnsiColor` | The `AnsiColor` enum value of the default color for the log event's level |
+|`levelColor` | `AnsiColors` | The `AnsiColors` enum value of the default color for the log event's level |
 |`levelEmoji` | char | The emoji representing the log level for those who like to spice up their logs |
 |`message` | string | The formatted log message |
 |`meta` | string | Only provided for Feature Loggers, the string value passed as the `name` argument |
