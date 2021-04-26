@@ -49,7 +49,28 @@ Log.info('This is a test message')
 
 Feature Loggers are only available within the class or module in which they are defined, and accept a `string` value that will identify where the message came from. This is useful in larger projects, since the message will give you context as to where it was printed. 
 
-Feature Loggers require configuration just like Global Loggers do. You can either pass configuration to each one you create, or you can create a default configuration for all Feature Loggers that don't provide configuration themselves:
+Crate a Feature Logger:
+
+```javascript
+const logger = Log.forFeature('FeatureClass')
+logger.info('Test info message from the FeatureClass')
+```
+
+Feature Loggers require configuration just like Global Loggers do. You can pass configuration to each one you create:
+
+```javascript
+const logger = Log.forFeature('FeatureClass', {
+  enabled: true,
+  level: LogLevel.ERROR,
+  writers: [
+    LogWriter.stdout(),
+    LogWriter.file(`${ROOT}/logs/feature-class.log`, { formatter: Formatters.monochromeFormatter }),
+  ]
+})
+
+logger.info('Test info message from the FeatureClass')
+```
+Or you can create a default configuration for all Feature Loggers that don't provide configuration themselves, which is easier, and will format all Feature Loggers the same:
 
 ```javascript
 const IS_DEV = process.env.NODE_ENV === 'development'
@@ -57,27 +78,25 @@ const IS_DEV = process.env.NODE_ENV === 'development'
 Log.init({
   providers: {
     globalLoggers: {...},
-    featureLogger: name => ({
-      enabled: true,
-      level: IS_DEV ? LogLevel.DEBUG : LogLevel.ERROR,
-      serializationStrategy: ObjectSerializationStrategy.INSPECT,
-      writers: [
-        LogWriter.stdout(),
-        LogWriter.file(`${ROOT}/logs/feature.${name}.log`, { formatProvider: Formatters.monochromeFormatter }),
-      ]
-    })  
+    featureLogger: name => {
+      const logName = snakeCase(name)
+      return {
+        enabled: true,
+        level: IS_DEV ? LogLevel.DEBUG : LogLevel.ERROR,
+        serializationStrategy: ObjectSerializationStrategy.INSPECT,
+        writers: [
+          LogWriter.stdout(),
+          LogWriter.file(`${ROOT}/logs/feature.${logName}.log`, { 
+            formatter: Formatters.monochromeFormatter 
+          })
+        ]
+      }
+    } 
   }
 })
 ```
 
-In this example, we set `enabled` to true, but set the `level` dependent on the `NODE_ENV` value. Instead of a single `LogWriter`, we specify two - one for the console, and one that logs to a file. Note that we're using a `formatProvider` to write monochrome, since we normally don't want ANSI colors present in our disk logs.
-
-Creating a Feature Logger is simple. We call the `forFeature` method on the main `Log` interface as such:
-
-```javascript
-const logger = Log.forFeature('SomeClassName')
-logger.info('This is from a class or module')
-```
+You can of course add custom configuration to any Feature Logger you create, which will override the default confugration
 
 ---
 ### `enum` LogLevel
