@@ -51,7 +51,7 @@ const LEVEL_META: LevelMeta = {
 const serialziers: Record<ObjectSerializationStrategy, (value: any, props: LoggerInstanceConfig) => string> = {
   [ObjectSerializationStrategy.OMIT]: () => '',
   [ObjectSerializationStrategy.INSPECT]: (value, props) => inspect(value, false, props.inspectionDepth, props.inspectionColor),
-  [ObjectSerializationStrategy.JSON]: value => JSON.stringify(value)
+  [ObjectSerializationStrategy.JSON]: value => JSON.stringify(value).replace(ANSI_PATTERN, '')
 }
 
 // Formatter supplier function definition
