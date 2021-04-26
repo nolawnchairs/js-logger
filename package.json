@@ -1,6 +1,6 @@
 {
   "name": "@nolawnchairs/logger",
-  "version": "3.0.0-rc2",
+  "version": "3.0.0",
   "description": "Multi-stream formatted logger for NodeJS applications",
   "main": "index.js",
   "keywords": [],

@@ -16,7 +16,7 @@ Log.init({
         serializationStrategy: ObjectSerializationStrategy.INSPECT,
         writers: [
           LogWriter.stdout(),
-          LogWriter.file(`${ROOT}/logs/stdout.log`, { formatProvider: Formatters.monochromeFormatter })
+          LogWriter.file(`${ROOT}/logs/stdout.log`, { formatter: Formatters.jsonFormatter })
         ]
       })
     },
@@ -25,8 +25,8 @@ Log.init({
       level: IS_DEV ? LogLevel.DEBUG : LogLevel.ERROR,
       serializationStrategy: ObjectSerializationStrategy.INSPECT,
       writers: [
-        LogWriter.stdout(),
-        LogWriter.file(`${ROOT}/logs/named.log`, { formatProvider: Formatters.monochromeFormatter }),
+        LogWriter.stdout({ formatProvider: (e) => `${e.message}` }),
+        LogWriter.file(`${ROOT}/logs/named.log`, { formatter: Formatters.monochromeFormatter }),
       ]
     })
   }
