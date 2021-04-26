@@ -39,7 +39,7 @@ export class LogWriter {
         await assertFile(file)
         if (fileStreams.has(file))
           return fileStreams.get(file)
-        const { mode = 644, encoding } = options
+        const { mode = 644, encoding } = options ?? {}
         const stream = createWriteStream(file, { mode, encoding, flags: 'a' })
         fileStreams.set(file, stream)
         return stream
