@@ -98,7 +98,7 @@ export namespace Formatters {
     }
   }
 
-  export function colorize(color: AnsiColors, text: string): string {
+  function colorize(color: AnsiColors, text: string): string {
     return color + text + AnsiColors.RESET
   }
 
