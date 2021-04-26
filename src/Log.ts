@@ -151,8 +151,8 @@ class LogImpl implements Logger {
   private print(level: LogLevel, text: string) {
     const entry = Formatters.createLogEntry(level, text, this.meta)
     for (const writer of this.config.writers) {
-      if (writer.formatterProvider) {
-        writer.write(writer.formatterProvider(entry) + this.eol)
+      if (writer.formatter) {
+        writer.write(writer.formatter(entry) + this.eol)
       } else {
         writer.write(this.formatter(entry) + this.eol)
       }

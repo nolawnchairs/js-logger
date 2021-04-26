@@ -10,7 +10,7 @@ type Provider = () => Promise<WriterInterface>
 const fileStreams: Map<string, WriteStream> = new Map()
 
 export interface WriterOptions {
-  formatProvider?: FormatProvider
+  formatter?: FormatProvider
 }
 
 export type FileWriterOptions = WriterOptions & {
@@ -49,8 +49,8 @@ export class LogWriter {
     }, options)
   }
 
-  get formatterProvider() {
-    return this.options?.formatProvider
+  get formatter() {
+    return this.options?.formatter
   }
 
   async write(value: string) {

@@ -61,7 +61,7 @@ export declare namespace Formatters {
 export declare type WriterInterface = WriteStream | NodeJS.WriteStream;
 export declare type Provider = () => Promise<WriterInterface>;
 export interface WriterOptions {
-  formatProvider?: FormatProvider
+  formatter?: FormatProvider
 }
 export declare type FileWriterOptions = WriterOptions & {
   mode?: number
@@ -72,7 +72,7 @@ export declare class LogWriter {
   static stdout(options?: WriterOptions): LogWriter;
   static stderr(options?: WriterOptions): LogWriter;
   static file(filePath: string, options?: FileWriterOptions): LogWriter;
-  get formatterProvider(): FormatProvider;
+  get formatter(): FormatProvider;
   write(value: string): Promise<void>;
 }
 export interface LoggerInstanceConfig extends LoggerGlobalConfig {
