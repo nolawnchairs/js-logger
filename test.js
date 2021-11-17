@@ -34,6 +34,7 @@ Log.init({
 })
 
 Log.debug('Debugging...')
+Log.debug([1, 2, 3])
 Log.info('Testing %s', 123)
 Log.warn({ stuff: [3, 4] })
 Log.error('Testing Info %s', { value: true, other: 'things' })

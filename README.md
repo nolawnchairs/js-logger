@@ -122,6 +122,36 @@ The `LogLevel` enum contains the following values:
 Each logger instance contains identical methods for each:
 `debug`, `info`, `warn`, `error` and `fatal`
 
+Each log level method takes one or more arguments. The first argument will always be printed, any additional arguments will only be printed if the first argument is a string with sprintf-type tokens that will be printed in order. 
+
+If the first argument is **not** a string, only the first argument will be printed, and the serialization strategy will apply. This example uses the default `INSPECT` strategy.
+
+```javascript
+Log.info('Test') // Test
+Log.info('Test #%d', 1) // Test #1
+Log.info('Test', '123') // Test
+Log.info([1, 2, 3]) // [1, 2, 3]
+Log.info({ value: 42 }) // { value: 42 }
+Log.info('The thing with id "%s" was not found', 42) // The thing with id "42" was not found
+Log.info('%d + %d = %d', 10, 10, 10 + 10) // 10 + 10 = 20
+```
+
+> More detailed documentation on sprintf tokens can be found [here](https://github.com/alexei/sprintf.js#readme)
+
+
+### Assertions
+
+Along with the standard log functions, there is also an `assert` method which you can call to print an "Assertion Failed" message if a given condition resolves to a false-like value.
+
+```javascript
+const [a, b] = [1, 0]
+Log.assert(a === b, '%d should equal %d', a, b)
+// Will print:
+// Assertion Failed: 1 should equal 0
+```
+
+Assertions are bound to a certain logging level, `LogLevel.DEBUG` by default, but this can be changed with the `assertionLevel` property in the global configuration. You can completely disable assertions for all levels by setting `assertionsEnabled` to false in the global configuration.
+
 ---
 ### `enum` ObjectSerializationStrategy
 
@@ -163,8 +193,8 @@ The following values can be set to the `global` object, and will provide default
 | `inspectionDepth` | number | The depth of serialization when using the `INSPECT` strategy. Defaults to `3` [See...](https://nodejs.org/api/util.html#util_util_inspect_object_options)  || 
 | `inspectionColor` | boolean | Used in the `INSPECT` strategy, governs whether or not to color the inspected object ||
 | `formatter` | `FormatProvider` | Defines a custom formatter for each `LogWriters` attached this logger. Note that writers may override this with their own formatter ||
-
-
+| `assertionsEnabled` | boolean | Whether or not failed assertion messages will be printed, Defaults to `true`, but will depend on the logging level to which they are bound | |
+| `assertionLevel` | `LogLevel` | The log level to which failed assertion messages will be printed. Defaults to `LogLevel.DEBUG`. Note that if choosing a log level that's is not enabled, assertions will not print ||
 ---
 
 ### `interface` LoggerInstanceConfig
@@ -176,7 +206,8 @@ Each individual logger you define must be configured with the following properti
 | ----------- | ----------- | -------- | :--------: |
 | `enabled` | boolean | Whether this logger will produce data | ✔️ |
 | `level` | `LogLevel` | The level to which this logger will adhere. Use a `LogLevel` enum value or an `or`'ed bitmask of multiple levels to use in unison<sup>1</sup> | ✔️ |
-| `writers` | `LogWriter[]` | An array of `LogWriter` instances this logger will use |✔️| 
+| `writers` | `LogWriter[]` | An array of `LogWriter` instances this logger will use |✔️|
+
 
 In addition to the above properties, the `LoggerInstanceConfig` will accept any of the properties defined in `LoggerGlobalConfig`, which will override any default values you set in `global`.
 
