@@ -192,7 +192,7 @@ The following values can be set to the `global` object, and will provide default
 | `serializationStrategy` | `ObjectSerializationStrategy` | How non-scalar values will be printed. Defaults to `INSPECT` ||
 | `inspectionDepth` | number | The depth of serialization when using the `INSPECT` strategy. Defaults to `3` [See...](https://nodejs.org/api/util.html#util_util_inspect_object_options)  || 
 | `inspectionColor` | boolean | Used in the `INSPECT` strategy, governs whether or not to color the inspected object ||
-| `formatter` | `FormatProvider` | Defines a custom formatter for each `LogWriters` attached this logger. Note that writers may override this with their own formatter ||
+| `formatter` | `FormatProvider` | Defines a custom formatter for each `LogWriter` attached this logger. Note that writers may override this with their own formatter ||
 | `assertionsEnabled` | boolean | Whether or not failed assertion messages will be printed, Defaults to `true`, but will depend on the logging level to which they are bound | |
 | `assertionLevel` | `LogLevel` | The log level to which failed assertion messages will be printed. Defaults to `LogLevel.DEBUG`. Note that if choosing a log level that's is not enabled, assertions will not print ||
 ---
@@ -294,7 +294,6 @@ The `LogEntry` object is passed to every formatter function and includes the fol
 |`level`|`LogLevel` | The `LogLevel` enum value of the log event |
 |`levelText` | string | The text representation of the level, in CAPS. Note that `INFO` and `WARN` are left-padded with one empty space to accommodate symmetry |
 |`levelColor` | `AnsiColors` | The `AnsiColors` enum value of the default color for the log event's level |
-|`levelEmoji` | char | The emoji representing the log level for those who like to spice up their logs |
 |`message` | string | The formatted log message |
 |`context` | string | Only provided for Feature Loggers if set, the string value passed as the `context` argument |
 
@@ -351,6 +350,6 @@ The file writer takes an options object with two additional optional properties:
 
 | Property | Type | Description |
 |---|---|---|
-| `mode` | number | The permissions for the file being written to. Defaults to `644` |
+| `mode` | number | The permissions for the file being written to in octal notation. Defaults to `0o644` |
 | `encoding` | string (`BufferEncoding`) | The encoding |
 
