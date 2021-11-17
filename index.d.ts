@@ -5,7 +5,6 @@
 import { WriteStream } from 'fs';
 
 export declare enum LogLevel {
-	ASSERT = 0,
 	DEBUG = 1,
 	INFO = 2,
 	WARN = 4,
@@ -79,7 +78,7 @@ export declare type WriterInterface = WriteStream | NodeJS.WriteStream;
 export declare type Provider = () => Promise<WriterInterface>;
 export interface WriterOptions {
 	/**
-	 * The fomatter provider for this writer
+	 * The formatter provider for this writer
 	 *
 	 * @type {FormatProvider}
 	 * @memberof WriterOptions
@@ -94,7 +93,7 @@ export declare type FileWriterOptions = WriterOptions & {
 	 */
 	mode?: number;
 	/**
-	 * The encoding. Defaluts to utf-8
+	 * The encoding. Defaults to utf-8
 	 *
 	 * @type {BufferEncoding}
 	 */
@@ -124,7 +123,7 @@ export declare class LogWriter {
 	 */
 	static stderr(options: WriterOptions): LogWriter;
 	/**
-	 * Creates a new LogWriter instance that dumpes to a file
+	 * Creates a new LogWriter instance that dumps to a file
 	 *
 	 * @static
 	 * @param {WriterOptions} options
@@ -151,7 +150,7 @@ export declare class LogWriter {
 export declare type LoggerInstanceConfigProvider = (value: string) => LoggerInstanceConfig;
 export interface LoggerGlobalConfig {
 	/**
-	 * The end-of-line character. Defalts to \n
+	 * The end-of-line character. Defaults to \n
 	 *
 	 * @type {string}
 	 * @memberof LoggerGlobalConfig
@@ -169,7 +168,7 @@ export interface LoggerGlobalConfig {
 	 * Defines the depth of object inspection (how many nested objects get printed)
 	 * when printing objects to the console or file. If an object has nested objects or
 	 * arrays that are nested deeper than this setting, they will print as '[object Object]'
-	 * and 'element1,element2', respectivey. Defaults to 3
+	 * and 'element1,element2', respectively. Defaults to 3
 	 *
 	 * @type {number}
 	 * @memberof LoggerGlobalConfig
@@ -185,7 +184,7 @@ export interface LoggerGlobalConfig {
 	inspectionColor?: boolean;
 	/**
 	 * Defines the strategy by which arrays and objects are serialized to the output
-	 * Defalts to ObjectSerializationStrategy.INSPECT
+	 * Defaults to ObjectSerializationStrategy.INSPECT
 	 *
 	 * @type {ObjectSerializationStrategy}
 	 * @memberof LoggerGlobalConfig
@@ -198,6 +197,13 @@ export interface LoggerGlobalConfig {
 	 * @memberof LoggerGlobalConfig
 	 */
 	assertionsEnabled?: boolean;
+	/**
+	 * Which logging level to use for printing failed assertions
+	 *
+	 * @type {LogLevel}
+	 * @memberof LoggerGlobalConfig
+	 */
+	assertionLevel?: LogLevel;
 }
 export interface LoggerConfig {
 	global?: LoggerGlobalConfig;
@@ -215,14 +221,14 @@ export interface LoggerInstanceConfig extends LoggerGlobalConfig {
 	 */
 	enabled: boolean;
 	/**
-	 * The logging level to use. Supply a single Loglevel value and the logger
+	 * The logging level to use. Supply a single LogLevel value and the logger
 	 * will print all logs from the supplied level, UP. LogLevels are ordered by
 	 * the severity: DEBUG, INFO, WARN, ERROR and FATAL. Choosing WARN will enable
 	 * WARN, ERROR and FATAL.
 	 *
 	 * You can also OR multiple levels together to form a bitmask and the logger will
 	 * print only those levels. LogLevel.INFO | LogLevel.ERROR will only print logs
-	 * for onlt those two levels
+	 * for only those two levels
 	 *
 	 * To print ALL levels, use the provided constant LEVELS_ALL
 	 *
@@ -317,7 +323,7 @@ declare class DefaultLogger implements Logger {
 	 */
 	init(config: LoggerConfig): void;
 	/**
-	 * Initializes a logging instance for a specific feature of your applcation
+	 * Initializes a logging instance for a specific feature of your application
 	 *
 	 * @param {string} context the context for this logger, such as a class name or module name
 	 * @param {LoggerInstanceConfig} [config] the optional configuration for this instance. If not provided, will inherit the default logger config defined in the init method under the featureLoggers property
