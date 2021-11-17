@@ -44,7 +44,7 @@ In the above example, we define a single `globalLogger`. The name we give this l
 
 ## Global vs Feature Loggers
 
-Global loggers are availble throughout your project and are logged to using the standard `Log` interface as such:
+Global loggers are available throughout your project and are logged to using the standard `Log` interface as such:
 
 ```javascript
 Log.info('This is a test message')
@@ -106,7 +106,7 @@ Log.init({
 })
 ```
 
-You can of course add custom configuration to any Feature Logger you create, which will override the default confugration.
+You can of course add custom configuration to any Feature Logger you create, which will override the default configuration.
 
 ---
 ### `enum` LogLevel
@@ -119,7 +119,7 @@ The `LogLevel` enum contains the following values:
 * `ERROR`
 * `FATAL`
 
-Each logger instance contains idential methods for each:
+Each logger instance contains identical methods for each:
 `debug`, `info`, `warn`, `error` and `fatal`
 
 ---
@@ -144,7 +144,7 @@ Configuration is set in the `Log.init()` method, and has the following structure
   global: LoggerGlobalConfig
   providers: {
     globalLoggers: {
-      yourLoggername: () => LoggerInstanceConfig
+      yourLoggerName: () => LoggerInstanceConfig
       anotherLogger: () => LoggerInstanceConfig
     }
     featureLogger: () => LoggerInstanceConfig
@@ -158,7 +158,7 @@ The following values can be set to the `global` object, and will provide default
 
 | Property | Type | Description | Required |
 | ----------- | ----------- | -------- | :--------: |
-| `eol` | string | The end-of-line charachter. Defaults to `\n`  ||
+| `eol` | string | The end-of-line character. Defaults to `\n`  ||
 | `serializationStrategy` | `ObjectSerializationStrategy` | How non-scalar values will be printed. Defaults to `INSPECT` ||
 | `inspectionDepth` | number | The depth of serialization when using the `INSPECT` strategy. Defaults to `3` [See...](https://nodejs.org/api/util.html#util_util_inspect_object_options)  || 
 | `inspectionColor` | boolean | Used in the `INSPECT` strategy, governs whether or not to color the inspected object ||
@@ -169,7 +169,7 @@ The following values can be set to the `global` object, and will provide default
 
 ### `interface` LoggerInstanceConfig
 
-Each individial logger you define must be configured with the following properties.
+Each individual logger you define must be configured with the following properties.
 
 
 | Property | Type | Description | Required |
@@ -197,7 +197,7 @@ The above configuration will ONLY print `INFO` or `ERROR` messages, and nothing 
 
 Formatters define how the logging messages are structured in output. There are three formatters included by default:
 
-### `Fromatters.defaultFormatter`
+### `Formatters.defaultFormatter`
 
 `defaultFormatter` produces colored formatting, ideal for console streams:
 
@@ -209,11 +209,11 @@ Formatters define how the logging messages are structured in output. There are t
 2021-04-25T18:48:35.409Z 45532  INFO | FeatureName | Testing 123
 ```
 
-### `Fromatters.monochromeFormatter`
+### `Formatters.monochromeFormatter`
 
 `monochromeFormatter` produces the same output as the `defaultFormatter`, but without the coloring
 
-### `Fromatters.jsonFormatter`
+### `Formatters.jsonFormatter`
 
 `jsonFormatter` produces a JSON object for each line printed. Useful for file logging where extra processing or analysis may be required
 
