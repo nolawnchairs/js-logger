@@ -23,6 +23,7 @@
     "typescript": "^3.9.9"
   },
   "scripts": {
+    "define": "dts-bundle-generator -o index.d.ts ./src/index.ts",
     "test": "node test.js"
   }
 }

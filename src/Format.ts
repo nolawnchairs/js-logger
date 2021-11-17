@@ -1,7 +1,7 @@
 
 import { inspect } from 'util'
 import { vsprintf } from 'sprintf-js'
-import { ObjectSerializationStrategy, LoggerInstanceConfig } from './Config'
+import { ObjectSerializationStrategy } from './Config'
 import { LogLevel, LogLevelEmoji } from './LogLevel'
 import { ANSI_PATTERN } from './Util'
 
@@ -13,7 +13,12 @@ export interface LogEntry {
   levelColor: AnsiColors
   levelEmoji: LogLevelEmoji
   message: string
-  meta?: string
+  context?: string
+}
+
+export interface TextBuilderConfig {
+  depth: number
+  color: boolean
 }
 
 export enum AnsiColors {
@@ -48,10 +53,10 @@ const LEVEL_META: LevelMeta = {
   [LogLevel.FATAL]: ['FATAL', AnsiColors.BG_BRIGHT_RED, LogLevelEmoji.FATAL],
 }
 
-const serialziers: Record<ObjectSerializationStrategy, (value: any, props: LoggerInstanceConfig) => string> = {
+const serialziers: Record<ObjectSerializationStrategy, (value: any, props: TextBuilderConfig) => string> = {
   [ObjectSerializationStrategy.OMIT]: () => '',
-  [ObjectSerializationStrategy.INSPECT]: (value, props) => inspect(value, false, props.inspectionDepth, props.inspectionColor),
-  [ObjectSerializationStrategy.JSON]: value => JSON.stringify(value).replace(ANSI_PATTERN, '')
+  [ObjectSerializationStrategy.INSPECT]: (value, props) => inspect(value, false, props.depth, props.color),
+  [ObjectSerializationStrategy.JSON]: value => JSON.stringify(value).replace(ANSI_PATTERN, ''),
 }
 
 // Formatter supplier function definition
@@ -60,7 +65,7 @@ export type FormatProvider = (e: LogEntry) => string
 export class TextBuilder {
   private message: string
   private args: any[] = []
-  constructor(message: any, args: any[], readonly config: LoggerInstanceConfig) {
+  constructor(message: any, args: any[], readonly serializationStrategy: ObjectSerializationStrategy, readonly config: TextBuilderConfig) {
     this.args = args
     if (typeof message === 'string') {
       this.message = message
@@ -72,7 +77,7 @@ export class TextBuilder {
 
   toString(): string {
     return vsprintf(this.message, this.args.map(a => {
-      const serialize = serialziers[this.config.serializationStrategy]
+      const serialize = serialziers[this.serializationStrategy]
       return typeof a === 'object' && serialize
         ? serialize(a, this.config)
         : a
@@ -84,7 +89,7 @@ export namespace Formatters {
 
   const pid = process.pid
 
-  export function createLogEntry(level: LogLevel, message: string, meta?: string): LogEntry {
+  export function createLogEntry(level: LogLevel, message: string, context?: string): LogEntry {
     const [levelText, levelColor, levelEmoji] = LEVEL_META[level]
     return {
       date: new Date(),
@@ -94,7 +99,7 @@ export namespace Formatters {
       levelEmoji,
       message,
       pid: pid.toString(10),
-      meta,
+      context,
     }
   }
 
@@ -102,34 +107,59 @@ export namespace Formatters {
     return color + text + AnsiColors.RESET
   }
 
+  /**
+   * The default formatter, ex:
+   * 2021-11-17T08:52:09.126Z 16880  INFO | Testing Info
+   *
+   * @export
+   * @param {LogEntry} e
+   * @return {*}  {string}
+   */
   export function defaultFormatter(e: LogEntry): string {
     const [, color] = LEVEL_META[e.level]
     return [
       colorize(AnsiColors.GRAY, e.date.toISOString()),
       e.pid,
       colorize(color, e.levelText),
-      e.meta
-        ? colorize(AnsiColors.GRAY, '| ') + colorize(AnsiColors.CYAN, e.meta) + ' ' + colorize(AnsiColors.GRAY, '|')
+      e.context
+        ? colorize(AnsiColors.GRAY, '| ') + colorize(AnsiColors.CYAN, e.context) + ' ' + colorize(AnsiColors.GRAY, '|')
         : colorize(AnsiColors.GRAY, '|'),
       e.message].join(' ')
   }
 
+  /**
+   * Formatter that outputs the same format as the default formatter,
+   * but with no ANSI colors, ex:
+   * 2021-11-17T08:52:09.126Z 16880  INFO | Testing Info
+   *
+   * @export
+   * @param {LogEntry} e
+   * @return {*}  {string}
+   */
   export function monochromeFormatter(e: LogEntry): string {
     return [
       e.date.toISOString(),
       e.pid,
       e.levelText,
-      e.meta ? '| ' + e.meta + ' |' : '|',
+      e.context ? `| ${e.context} |` : '|',
       e.message.replace(ANSI_PATTERN, '')].join(' ')
   }
 
+  /**
+   * Formatter that serializes each log entry into JSON. Useful
+   * for file loggers.
+   *
+   * @export
+   * @param {LogEntry} e
+   * @return {*}  {string}
+   */
   export function jsonFormatter(e: LogEntry): string {
     return JSON.stringify({
       date: e.date.toISOString(),
       pid: e.pid,
       level: e.levelText.trim(),
-      meta: e.meta ? e.meta : undefined,
-      message: e.message.replace(ANSI_PATTERN, '')
+      context: e.context ?? undefined,
+      message: e.message.replace(ANSI_PATTERN, ''),
     })
   }
 }

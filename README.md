@@ -27,7 +27,10 @@ Log.init({
         level: LogLevel.DEBUG,
         serializationStrategy: ObjectSerializationStrategy.INSPECT,
         writers: [
-          LogWriter.stdout()
+          LogWriter.stdout(),
+          LogWriter.file(`${LOG_DIR}/my-application.log`, { 
+            formatter: Formatters.jsonFormatter 
+          })
         ]
       })
     }
@@ -64,7 +67,9 @@ const logger = Log.forFeature('FeatureClass', {
   level: LogLevel.ERROR,
   writers: [
     LogWriter.stdout(),
-    LogWriter.file(`${ROOT}/logs/feature-class.log`, { formatter: Formatters.monochromeFormatter }),
+    LogWriter.file(`${LOG_DIR}/logs/feature-class.log`, { 
+      formatter: Formatters.monochromeFormatter 
+    }),
   ]
 })
 
@@ -78,16 +83,21 @@ const IS_DEV = process.env.NODE_ENV === 'development'
 Log.init({
   providers: {
     globalLoggers: {...},
-    featureLogger: name => {
-      const logName = snakeCase(name)
+    featureLogger: context => {
+      const logName = snakeCase(context)
       return {
         enabled: true,
         level: IS_DEV ? LogLevel.DEBUG : LogLevel.ERROR,
         serializationStrategy: ObjectSerializationStrategy.INSPECT,
         writers: [
           LogWriter.stdout(),
-          LogWriter.file(`${ROOT}/logs/feature.${logName}.log`, { 
-            formatter: Formatters.monochromeFormatter 
+          // Create a new log file for each feature
+          LogWriter.file(`${LOG_DIR}/logs/feature.${logName}.log`, { 
+            formatter: Formatters.jsonFormatter 
+          })
+          // Or use the same file for all logging.
+          LogWriter.file(`${LOG_DIR}/my-application.log`, { 
+            formatter: Formatters.jsonFormatter 
           })
         ]
       }
@@ -96,7 +106,7 @@ Log.init({
 })
 ```
 
-You can of course add custom configuration to any Feature Logger you create, which will override the default confugration
+You can of course add custom configuration to any Feature Logger you create, which will override the default confugration.
 
 ---
 ### `enum` LogLevel
@@ -212,7 +222,7 @@ Formatters define how the logging messages are structured in output. There are t
 {"date":"2021-04-26T14:21:55.392Z","pid":"1031654","level":"INFO","message":"Testing 123"}
 
 # Feature
-{"date":"2021-04-26T14:21:55.392Z","pid":"1031654","level":"INFO","meta":"FeatureName","message":"Testing 123"}
+{"date":"2021-04-26T14:21:55.392Z","pid":"1031654","level":"INFO","context":"FeatureName","message":"Testing 123"}
 ```
 
 ### `Formatters.colorize(color: AnsiColors, text: string)`
@@ -255,7 +265,7 @@ The `LogEntry` object is passed to every formatter function and includes the fol
 |`levelColor` | `AnsiColors` | The `AnsiColors` enum value of the default color for the log event's level |
 |`levelEmoji` | char | The emoji representing the log level for those who like to spice up their logs |
 |`message` | string | The formatted log message |
-|`meta` | string | Only provided for Feature Loggers, the string value passed as the `name` argument |
+|`context` | string | Only provided for Feature Loggers if set, the string value passed as the `context` argument |
 
 
 
@@ -278,7 +288,7 @@ Prints to a file. The `file` argument is required and must be the path to the wr
 
 > File writers will attempt to re-use existing opened write streams, which are indexed by the resolved file path parameter. 
 
-When defining Feature Loggers, either inline or in the global configuration, you can set the log file name within the definition. It is recommended that you use consistent absolute paths to avoid multiple write streams to the same files. All paths passed to the `LogWriter.file` function are normalized using the `path.resolve` function provided by NodeJS.
+When defining Feature Loggers, either inline or in the global configuration, you can set the log file name within the definition. It is recommended that you use consistent absolute paths to avoid multiple write streams to the same files. All paths passed to the `LogWriter.file` function are normalized using the `path.resolve` function provided by NodeJS to ensure only a single stream to a given file exists.
 
 ```javascript
   featureLogger: name => ({

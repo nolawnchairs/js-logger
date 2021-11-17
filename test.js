@@ -16,7 +16,7 @@ Log.init({
         serializationStrategy: ObjectSerializationStrategy.INSPECT,
         writers: [
           LogWriter.stdout(),
-          LogWriter.file(`${ROOT}/logs/stdout.log`, { formatter: Formatters.jsonFormatter })
+          LogWriter.file(`${ROOT}/logs/global-json.log`, { formatter: Formatters.jsonFormatter })
         ]
       })
     },
@@ -26,7 +26,8 @@ Log.init({
       serializationStrategy: ObjectSerializationStrategy.INSPECT,
       writers: [
         LogWriter.stdout({ formatProvider: (e) => `${e.message}` }),
-        LogWriter.file(`${ROOT}/logs/named.log`, { formatter: Formatters.monochromeFormatter }),
+        LogWriter.file(`${ROOT}/logs/named-monochrome.log`, { formatter: Formatters.monochromeFormatter }),
+        LogWriter.file(`${ROOT}/logs/named-json.log`, { formatter: Formatters.jsonFormatter })
       ]
     })
   }
@@ -35,6 +36,7 @@ Log.init({
 Log.info('Testing %s', 123)
 Log.info({ stuff: [3, 4] })
 Log.info('Testing Info %s', { value: true, other: 'things' })
+
 const featureLogger = Log.forFeature('LoggerProvider')
 featureLogger.info('This is a test for debug %s', 'a string')
 featureLogger.info('This is for info')

@@ -5,5 +5,4 @@ package-lock.json
 tsconfig.json
 tslint.json
 .gitignore
-temp
 logs

@@ -9,11 +9,18 @@
     "import-spacing": true,
     "new-parens": true,
     "eofline": true,
-    "no-boolean-literal-compare": [
-      true
-    ],
+    "no-boolean-literal-compare": true,
     "no-consecutive-blank-lines": true,
     "no-trailing-whitespace": true,
+    "no-return-await": true,
+    "no-default-export": true,
+    "trailing-comma": [
+      true,
+      {
+        "multiline": "always",
+        "singleline": "never"
+      }
+    ],
     "quotemark": [
       true,
       "single",
