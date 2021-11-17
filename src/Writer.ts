@@ -12,7 +12,7 @@ const fileStreams: Map<string, WriteStream> = new Map()
 
 export interface WriterOptions {
   /**
-   * The fomatter provider for this writer
+   * The formatter provider for this writer
    *
    * @type {FormatProvider}
    * @memberof WriterOptions
@@ -28,7 +28,7 @@ export type FileWriterOptions = WriterOptions & {
    */
   mode?: number
   /**
-   * The encoding. Defaluts to utf-8
+   * The encoding. Defaults to utf-8
    *
    * @type {BufferEncoding}
    */
@@ -71,7 +71,7 @@ export class LogWriter {
   }
 
   /**
-   * Creates a new LogWriter instance that dumpes to a file
+   * Creates a new LogWriter instance that dumps to a file
    *
    * @static
    * @param {WriterOptions} options

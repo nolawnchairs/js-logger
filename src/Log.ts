@@ -104,7 +104,7 @@ class DefaultLogger implements Logger {
   }
 
   /**
-   * Initializes a logging instance for a specific feature of your applcation
+   * Initializes a logging instance for a specific feature of your application
    *
    * @param {string} context the context for this logger, such as a class name or module name
    * @param {LoggerInstanceConfig} [config] the optional configuration for this instance. If not provided, will inherit the default logger config defined in the init method under the featureLoggers property

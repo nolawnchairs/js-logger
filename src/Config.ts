@@ -7,7 +7,7 @@ export type LoggerInstanceConfigProvider = (value: string) => LoggerInstanceConf
 
 export interface LoggerGlobalConfig {
   /**
-   * The end-of-line character. Defalts to \n
+   * The end-of-line character. Defaults to \n
    *
    * @type {string}
    * @memberof LoggerGlobalConfig
@@ -25,7 +25,7 @@ export interface LoggerGlobalConfig {
    * Defines the depth of object inspection (how many nested objects get printed)
    * when printing objects to the console or file. If an object has nested objects or
    * arrays that are nested deeper than this setting, they will print as '[object Object]'
-   * and 'element1,element2', respectivey. Defaults to 3
+   * and 'element1,element2', respectively. Defaults to 3
    *
    * @type {number}
    * @memberof LoggerGlobalConfig
@@ -41,7 +41,7 @@ export interface LoggerGlobalConfig {
   inspectionColor?: boolean
   /**
    * Defines the strategy by which arrays and objects are serialized to the output
-   * Defalts to ObjectSerializationStrategy.INSPECT
+   * Defaults to ObjectSerializationStrategy.INSPECT
    *
    * @type {ObjectSerializationStrategy}
    * @memberof LoggerGlobalConfig
@@ -80,14 +80,14 @@ export interface LoggerInstanceConfig extends LoggerGlobalConfig {
    */
   enabled: boolean
   /**
-   * The logging level to use. Supply a single Loglevel value and the logger
+   * The logging level to use. Supply a single LogLevel value and the logger
    * will print all logs from the supplied level, UP. LogLevels are ordered by
    * the severity: DEBUG, INFO, WARN, ERROR and FATAL. Choosing WARN will enable
    * WARN, ERROR and FATAL.
    *
    * You can also OR multiple levels together to form a bitmask and the logger will
    * print only those levels. LogLevel.INFO | LogLevel.ERROR will only print logs
-   * for onlt those two levels
+   * for only those two levels
    *
    * To print ALL levels, use the provided constant LEVELS_ALL
    *
