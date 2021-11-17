@@ -1,4 +1,4 @@
-# Logger v3
+# Logger
 
 [![npm version](https://badge.fury.io/js/%40nolawnchairs%2Flogger.svg)](https://badge.fury.io/js/%40nolawnchairs%2Flogger)
 
