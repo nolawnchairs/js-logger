@@ -23,7 +23,7 @@
     "typescript": "^3.9.9"
   },
   "scripts": {
-    "define": "dts-bundle-generator -o index.d.ts ./src/index.ts",
+    "define": "dts-bundle-generator -o index.d.ts ./src/index.ts && echo 'Ensrure that defaultLogger as Log is in the last export statement of the generated file'",
     "test": "node test.js"
   }
 }
