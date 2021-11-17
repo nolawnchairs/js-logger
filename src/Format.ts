@@ -2,7 +2,7 @@
 import { inspect } from 'util'
 import { vsprintf } from 'sprintf-js'
 import { ObjectSerializationStrategy } from './Config'
-import { LogLevel, LogLevelEmoji } from './LogLevel'
+import { LogLevel } from './LogLevel'
 import { ANSI_PATTERN } from './Util'
 
 export interface LogEntry {
@@ -11,7 +11,6 @@ export interface LogEntry {
   level: LogLevel
   levelText: string
   levelColor: AnsiColors
-  levelEmoji: LogLevelEmoji
   message: string
   context?: string
 }
@@ -44,13 +43,13 @@ export enum AnsiColors {
 }
 
 // Level meta information
-type LevelMeta = Record<LogLevel, [string, AnsiColors, LogLevelEmoji]>
+type LevelMeta = Record<LogLevel, [string, AnsiColors]>
 const LEVEL_META: LevelMeta = {
-  [LogLevel.DEBUG]: ['DEBUG', AnsiColors.BRIGHT_GREEN, LogLevelEmoji.DEBUG],
-  [LogLevel.INFO]: [' INFO', AnsiColors.BRIGHT_BLUE, LogLevelEmoji.INFO],
-  [LogLevel.WARN]: [' WARN', AnsiColors.BRIGHT_YELLOW, LogLevelEmoji.WARN],
-  [LogLevel.ERROR]: ['ERROR', AnsiColors.BRIGHT_RED, LogLevelEmoji.ERROR],
-  [LogLevel.FATAL]: ['FATAL', AnsiColors.BG_BRIGHT_RED, LogLevelEmoji.FATAL],
+  [LogLevel.DEBUG]: ['DEBUG', AnsiColors.BRIGHT_GREEN],
+  [LogLevel.INFO]: [' INFO', AnsiColors.BRIGHT_BLUE],
+  [LogLevel.WARN]: [' WARN', AnsiColors.BRIGHT_YELLOW],
+  [LogLevel.ERROR]: ['ERROR', AnsiColors.BRIGHT_RED],
+  [LogLevel.FATAL]: ['FATAL', AnsiColors.BG_BRIGHT_RED],
 }
 
 const serialziers: Record<ObjectSerializationStrategy, (value: any, props: TextBuilderConfig) => string> = {
@@ -90,13 +89,12 @@ export namespace Formatters {
   const pid = process.pid
 
   export function createLogEntry(level: LogLevel, message: string, context?: string): LogEntry {
-    const [levelText, levelColor, levelEmoji] = LEVEL_META[level]
+    const [levelText, levelColor] = LEVEL_META[level]
     return {
       date: new Date(),
       level,
       levelText,
       levelColor,
-      levelEmoji,
       message,
       pid: pid.toString(10),
       context,

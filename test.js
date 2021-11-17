@@ -33,13 +33,16 @@ Log.init({
   }
 })
 
+Log.debug('Debugging...')
 Log.info('Testing %s', 123)
-Log.info({ stuff: [3, 4] })
-Log.info('Testing Info %s', { value: true, other: 'things' })
+Log.warn({ stuff: [3, 4] })
+Log.error('Testing Info %s', { value: true, other: 'things' })
+Log.assert(1 == 0, 'Assert that 1 is equal to 0')
 
 const featureLogger = Log.forFeature('LoggerProvider')
-featureLogger.info('This is a test for debug %s', 'a string')
+featureLogger.debug('This is a test for debug %s', 'a string')
 featureLogger.info('This is for info')
 featureLogger.warn('This is a test for a warning')
 featureLogger.error('This is a test for an error')
 featureLogger.fatal('This is a test for a fatal error')
+featureLogger.assert(1 == 0, '%d should equal %d', 1, 0)

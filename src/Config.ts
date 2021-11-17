@@ -47,6 +47,20 @@ export interface LoggerGlobalConfig {
    * @memberof LoggerGlobalConfig
    */
   serializationStrategy?: ObjectSerializationStrategy
+  /**
+   * Whether or not to print failed assertions. Defaults to true
+   *
+   * @type {boolean}
+   * @memberof LoggerGlobalConfig
+   */
+  assertionsEnabled?: boolean
+  /**
+   * Which logging level to use for printing failed assertions
+   *
+   * @type {LogLevel}
+   * @memberof LoggerGlobalConfig
+   */
+  assertionLevel?: LogLevel
 }
 
 export interface LoggerConfig {

@@ -1,9 +1,9 @@
 
-import { LogWriter } from '.'
+import { AnsiColors, LogWriter } from '.'
 import { LoggerConfig, LoggerInstanceConfig, LoggerInstanceConfigProvider, LoggerGlobalConfig, ObjectSerializationStrategy } from './Config'
 import { Formatters, TextBuilder, TextBuilderConfig } from './Format'
 import { LogLevel } from './LogLevel'
-import { mergeOptions } from './Util'
+import { ANSI_PATTERN, mergeOptions } from './Util'
 
 interface Logger {
   /**
@@ -46,15 +46,26 @@ interface Logger {
    * @memberof Logger
    */
   fatal(message: any, ...args: any[]): void
+  /**
+   * Prints an assertion to the log
+   *
+   * @param {boolean} condition
+   * @param {*} message
+   * @param {...any[]} args
+   * @memberof Logger
+   */
+  assert(condition: boolean, message: any, ...args: any[]): void
 }
 
 const globalLoggers: Map<string, LogImpl> = new Map()
 const defaultConfig: LoggerGlobalConfig = {
-  serializationStrategy: ObjectSerializationStrategy.INSPECT,
+  eol: '\n',
   inspectionColor: false,
   inspectionDepth: 3,
-  eol: '\n',
+  serializationStrategy: ObjectSerializationStrategy.INSPECT,
   formatter: Formatters.defaultFormatter,
+  assertionsEnabled: true,
+  assertionLevel: LogLevel.DEBUG,
 }
 
 class DefaultLogger implements Logger {
@@ -137,6 +148,10 @@ class DefaultLogger implements Logger {
   fatal(message: any, ...args: any[]) {
     globalLoggers.forEach(log => log.fatal(message, ...args))
   }
+
+  assert(condition: boolean, message: any, ...args: any[]) {
+    globalLoggers.forEach(log => log.assert(condition, message, ...args))
+  }
 }
 
 type LoggerProperties = {
@@ -153,13 +168,17 @@ class LogImpl implements Logger {
   private readonly textConfig: TextBuilderConfig
   private readonly serializationStrategy: ObjectSerializationStrategy
   private readonly eol: string
+  private readonly assertionsEnabled: boolean
+  private readonly assertionsLevel: LogLevel
 
   constructor(properties: LoggerProperties) {
     const { config, context } = properties
-    const { enabled, eol, inspectionColor, inspectionDepth,
+    const { enabled, eol, inspectionColor, inspectionDepth, assertionLevel, assertionsEnabled,
       formatter, level, writers, serializationStrategy } = config
 
     this.enabled = enabled
+    this.assertionsLevel = assertionLevel
+    this.assertionsEnabled = assertionsEnabled
     this.serializationStrategy = serializationStrategy
     this.textConfig = {
       color: inspectionColor,
@@ -234,6 +253,20 @@ class LogImpl implements Logger {
         this.serializationStrategy,
         this.textConfig,
       ).toString())
+    }
+  }
+
+  assert(condition: boolean, message: any, ...args: any[]) {
+    if (!condition && this.assertionsEnabled && this.canPrint(this.assertionsLevel)) {
+      this.print(
+        this.assertionsLevel,
+        new TextBuilder(
+          Formatters.colorize(AnsiColors.BRIGHT_RED, 'Assertion Failed') + ': ' + message,
+          args,
+          this.serializationStrategy,
+          this.textConfig,
+        ).toString(),
+      )
     }
   }
 
