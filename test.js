@@ -7,6 +7,8 @@ const ROOT = path.resolve(__dirname)
 Log.init({
   global: {
     inspectionColor: true,
+    assertionLevel: LogLevel.ERROR,
+    assertionsEnabled: true,
   },
   providers: {
     globalLoggers: {
@@ -38,9 +40,14 @@ Log.debug([1, 2, 3])
 Log.info('Testing %s', 123)
 Log.warn({ stuff: [3, 4] })
 Log.error('Testing Info %s', { value: true, other: 'things' })
-Log.assert(1 == 0, 'Assert that 1 is equal to 0')
 
-const featureLogger = Log.forFeature('LoggerProvider')
+const [a, b] = [1, 0]
+Log.assert(a === b, '%d should equal %d', a, b)
+
+const [c, d] = [1, 1]
+Log.assert(c === d, '%d should equal %d', c, d)
+
+const featureLogger = Log.forFeature('FeatureLogger')
 featureLogger.debug('This is a test for debug %s', 'a string')
 featureLogger.info('This is for info')
 featureLogger.warn('This is a test for a warning')
