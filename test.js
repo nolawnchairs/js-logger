@@ -27,9 +27,9 @@ Log.init({
       //level: LogLevel.DEBUG,
       serializationStrategy: ObjectSerializationStrategy.INSPECT,
       writers: [
-        LogWriter.stdout({ level: LogLevel.INFO | LogLevel.ERROR }),
-        LogWriter.file(`${ROOT}/logs/named-monochrome.log`, { formatter: Formatters.monochromeFormatter }),
-        LogWriter.file(`${ROOT}/logs/named-json.log`, { formatter: Formatters.jsonFormatter })
+        LogWriter.stdout(),
+        LogWriter.file(`${ROOT}/logs/named-monochrome.log`, { formatter: Formatters.monochromeFormatter, level: LogLevel.WARN }),
+        LogWriter.file(`${ROOT}/logs/named-json.log`, { formatter: Formatters.jsonFormatter, level: LogLevel.ERROR })
       ]
     })
   }
