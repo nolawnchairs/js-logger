@@ -1,8 +1,9 @@
 
 import { resolve } from 'path'
 import { createWriteStream, WriteStream } from 'fs'
-import { assertFile } from './Util'
+import { assertFile, computeLevel } from './Util'
 import { FormatProvider } from './Format'
+import { LogLevel } from './LogLevel'
 
 type WriterInterface = WriteStream | NodeJS.WriteStream
 type Provider = () => Promise<WriterInterface>
@@ -18,6 +19,15 @@ export interface WriterOptions {
    * @memberof WriterOptions
    */
   formatter?: FormatProvider
+  /**
+   * The logging level or bitmask specific to this writer. Note that if a level
+   * is provided to the parent logger, its log level constraints will apply to
+   * the writer as well.
+   *
+   * @type {(LogLevel | number)}
+   * @memberof WriterOptions
+   */
+  level?: LogLevel | number
 }
 
 export type FileWriterOptions = WriterOptions & {
@@ -39,22 +49,26 @@ export class LogWriter {
 
   private _writer: WriterInterface
   private _formatter: FormatProvider
+  private _level: number
 
-  constructor(
-    private writerProvider: Provider,
-    options: WriterOptions = {}) {
+  constructor(private writerProvider: Provider, options: WriterOptions = {}) {
     this._formatter = options.formatter
+    this._level = computeLevel(options.level)
+  }
+
+  isLevelEnabled(level: LogLevel): boolean {
+    return !this._level || !!(this._level & level)
   }
 
   /**
    * Creates a new LogWriter instance that prints to stdout
    *
    * @static
-   * @param {WriterOptions} options
+   * @param {WriterOptions} [options]
    * @return {*}  {LogWriter}
    * @memberof LogWriter
    */
-  static stdout(options: WriterOptions): LogWriter {
+  static stdout(options?: WriterOptions): LogWriter {
     return new LogWriter(() => Promise.resolve(process.stdout), options)
   }
 
@@ -62,11 +76,11 @@ export class LogWriter {
    * Creates a new LogWriter instance that prints to stderr
    *
    * @static
-   * @param {WriterOptions} options
+   * @param {WriterOptions} [options]
    * @return {*}  {LogWriter}
    * @memberof LogWriter
    */
-  static stderr(options: WriterOptions): LogWriter {
+  static stderr(options?: WriterOptions): LogWriter {
     return new LogWriter(() => Promise.resolve(process.stderr), options)
   }
 

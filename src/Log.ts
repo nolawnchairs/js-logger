@@ -1,9 +1,9 @@
 
-import { AnsiColors, LogWriter } from '.'
+import { AnsiColors, LEVELS_ALL, LogWriter } from '.'
 import { LoggerConfig, LoggerInstanceConfig, LoggerInstanceConfigProvider, LoggerGlobalConfig, ObjectSerializationStrategy } from './Config'
 import { Formatters, TextBuilder, TextBuilderConfig } from './Format'
 import { LogLevel } from './LogLevel'
-import { ANSI_PATTERN, mergeOptions } from './Util'
+import { computeLevel, mergeOptions } from './Util'
 
 interface Logger {
   /**
@@ -68,7 +68,7 @@ const defaultConfig: LoggerGlobalConfig = {
   assertionLevel: LogLevel.DEBUG,
 }
 
-class DefaultLogger implements Logger {
+export class DefaultLogger implements Logger {
 
   private globalConfig: LoggerGlobalConfig = {}
   private featureLoggerTemplate: LoggerInstanceConfigProvider
@@ -174,9 +174,9 @@ class LogImpl implements Logger {
   constructor(properties: LoggerProperties) {
     const { config, context } = properties
     const { enabled, eol, inspectionColor, inspectionDepth, assertionLevel, assertionsEnabled,
-      formatter, level, writers, serializationStrategy } = config
+      formatter, level = LEVELS_ALL, writers, serializationStrategy } = config
 
-    this.enabled = enabled
+    this.enabled = enabled ?? true
     this.assertionsLevel = assertionLevel
     this.assertionsEnabled = assertionsEnabled
     this.serializationStrategy = serializationStrategy
@@ -191,76 +191,59 @@ class LogImpl implements Logger {
     // Assign provided formatter or default formatter to all writers that did not define one
     this.writers.filter(w => !w.formatter)
       .forEach(w => w.setFormatter(formatter ?? Formatters.defaultFormatter))
-
-    if ((Math.log(level) / Math.log(2)) % 1) { // Masked level
-      this.level = level
-    } else { // single level, so assign all higher levels
-      this.level = Object.values(LogLevel)
-        .filter(l => l >= level)
-        .reduce((a, c) => a |= Number(c), 0)
-    }
+    this.level = computeLevel(level)
   }
 
   debug(message?: any, ...args: any[]) {
-    if (this.canPrint(LogLevel.DEBUG)) {
-      this.print(LogLevel.DEBUG, new TextBuilder(
-        message,
-        args,
-        this.serializationStrategy,
-        this.textConfig,
-      ).toString())
-    }
+    this.print(LogLevel.DEBUG, () => new TextBuilder(
+      message,
+      args,
+      this.serializationStrategy,
+      this.textConfig,
+    ).toString())
   }
 
   info(message?: any, ...args: any[]) {
-    if (this.canPrint(LogLevel.INFO)) {
-      this.print(LogLevel.INFO, new TextBuilder(
-        message,
-        args,
-        this.serializationStrategy,
-        this.textConfig,
-      ).toString())
-    }
+    this.print(LogLevel.INFO, () => new TextBuilder(
+      message,
+      args,
+      this.serializationStrategy,
+      this.textConfig,
+    ).toString())
   }
 
   warn(message?: any, ...args: any[]) {
-    if (this.canPrint(LogLevel.WARN)) {
-      this.print(LogLevel.WARN, new TextBuilder(
-        message,
-        args,
-        this.serializationStrategy,
-        this.textConfig,
-      ).toString())
-    }
+    this.print(LogLevel.WARN, () => new TextBuilder(
+      message,
+      args,
+      this.serializationStrategy,
+      this.textConfig,
+    ).toString())
   }
 
   error(message?: any, ...args: any[]) {
-    if (this.canPrint(LogLevel.ERROR)) {
-      this.print(LogLevel.ERROR, new TextBuilder(
-        message,
-        args,
-        this.serializationStrategy,
-        this.textConfig,
-      ).toString())
-    }
+    this.print(LogLevel.ERROR, () => new TextBuilder(
+      message,
+      args,
+      this.serializationStrategy,
+      this.textConfig,
+    ).toString())
   }
 
   fatal(message?: any, ...args: any[]) {
-    if (this.canPrint(LogLevel.FATAL)) {
-      this.print(LogLevel.FATAL, new TextBuilder(
-        message,
-        args,
-        this.serializationStrategy,
-        this.textConfig,
-      ).toString())
-    }
+    this.print(LogLevel.FATAL, () => new TextBuilder(
+      message,
+      args,
+      this.serializationStrategy,
+      this.textConfig,
+    ).toString())
   }
 
   assert(condition: boolean, message: any, ...args: any[]) {
-    if (!condition && this.assertionsEnabled && this.canPrint(this.assertionsLevel)) {
+    if (!condition && this.assertionsEnabled && this.isLevelEnabled(this.assertionsLevel)) {
       this.print(
         this.assertionsLevel,
-        new TextBuilder(
+        () => new TextBuilder(
           Formatters.colorize(AnsiColors.BRIGHT_RED, 'Assertion Failed') + ': ' + message,
           args,
           this.serializationStrategy,
@@ -270,17 +253,15 @@ class LogImpl implements Logger {
     }
   }
 
-  private canPrint(level: LogLevel): boolean {
+  private isLevelEnabled(level: LogLevel): boolean {
     return this.enabled && !!(level & this.level)
   }
 
-  private print(level: LogLevel, text: string) {
-    const entry = Formatters.createLogEntry(level, text, this.context)
+  private print(level: LogLevel, messageProvider: () => string) {
+    const entry = Formatters.createLogEntry(level, messageProvider(), this.context)
     for (const writer of this.writers) {
-      writer.write(writer.formatter(entry) + this.eol)
+      if (writer.isLevelEnabled(level) && this.isLevelEnabled(level))
+        writer.write(writer.formatter(entry) + this.eol)
     }
   }
 }
-
-const defaultLogger = new DefaultLogger()
-export { defaultLogger as Log }

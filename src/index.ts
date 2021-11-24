@@ -1,9 +1,10 @@
-import { Log } from './Log'
+import { DefaultLogger } from './Log'
 import { LoggerConfig, LoggerInstanceConfig, LoggerGlobalConfig, LoggerInstanceConfigProvider, ObjectSerializationStrategy } from './Config'
 import { Formatters, FormatProvider, LogEntry, AnsiColors } from './Format'
 import { LogLevel } from './LogLevel'
 import { LogWriter } from './Writer'
 
+const Log = new DefaultLogger()
 const LEVELS_ALL = 31
 
 export {

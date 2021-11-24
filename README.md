@@ -204,9 +204,9 @@ Each individual logger you define must be configured with the following properti
 
 | Property | Type | Description | Required |
 | ----------- | ----------- | -------- | :--------: |
-| `enabled` | boolean | Whether this logger will produce data | ✔️ |
-| `level` | `LogLevel` | The level to which this logger will adhere. Use a `LogLevel` enum value or an `or`'ed bitmask of multiple levels to use in unison<sup>1</sup> | ✔️ |
-| `writers` | `LogWriter[]` | An array of `LogWriter` instances this logger will use |✔️|
+| `enabled?` | boolean | Whether this logger will produce data. Defaults to `true` | ✅ |
+| `level?` | `LogLevel \| number` | The level to which this logger will adhere. Use a `LogLevel` enum value or an `or`'ed bitmask of multiple levels to use in unison<sup>1</sup>. The value set here will apply the same constraints to child writers. If specifying custom levels for writers, leave this option empty, as it defaults to `LEVELS_ALL` | ✅ |
+| `writers` | `LogWriter[]` | An array of `LogWriter` instances this logger will use | ✅ |
 
 
 In addition to the above properties, the `LoggerInstanceConfig` will accept any of the properties defined in `LoggerGlobalConfig`, which will override any default values you set in `global`.
@@ -331,6 +331,20 @@ When defining Feature Loggers, either inline or in the global configuration, you
   })
 
 ```
+You can narrow down the log levels each writer will print by specifying its own log level. This is useful if you only want error or fatal messages to be logged to disk, but still want warning levels printing to stdout.
+
+```javascript
+  featureLogger: name => ({
+    enabled: !IS_DEV,
+    formatter: Formatters.monochromeFormatter,
+    writers: [
+      LogWriter.file(`${ROOT}/logs/feature.${name}-error.log`, {
+        level: LogLevel.ERROR
+      }),
+    ]
+  })
+```
+Note that when specifying levels to writers, they will be constrained by the level set in the parent logger. For example, if you set the logger's level to `LogLevel.ERROR` only, and supply `LogLevel.INFO | LogLevel.ERROR` to a writer, only the error level messages will be printed because the parent logger does not allow info level messages to print. When Supplying a level constraint to writers, it's best to leave either the logger's level option empty to relegate the message filtering to the writers.
 
 ---
 
@@ -343,6 +357,7 @@ Writers can accept an options object which is optional, and all properties provi
 | Property | Type | Description |
 |---|---|---|
 | `formatter` | `FormatProvider` | The function that builds the message from the `LogEntry` object provided |
+| `level` | `LogLevel \| number` | The log level (or bitmask) to apply to this writer. Note that the level provided here is contingent on it being enabled in the parent logger.
 
 ### `object` FileWriterOptions
 

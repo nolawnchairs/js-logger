@@ -73,12 +73,12 @@ export interface LoggerConfig {
 
 export interface LoggerInstanceConfig extends LoggerGlobalConfig {
   /**
-   * Whether or not this logger is enabled
+   * Whether or not this logger is enabled, defaults to true
    *
    * @type {boolean}
    * @memberof LoggerInstanceConfig
    */
-  enabled: boolean
+  enabled?: boolean
   /**
    * The logging level to use. Supply a single LogLevel value and the logger
    * will print all logs from the supplied level, UP. LogLevels are ordered by
@@ -89,12 +89,14 @@ export interface LoggerInstanceConfig extends LoggerGlobalConfig {
    * print only those levels. LogLevel.INFO | LogLevel.ERROR will only print logs
    * for only those two levels
    *
-   * To print ALL levels, use the provided constant LEVELS_ALL
+   * Optional. By default, will allow all levels. If supplying custom log levels to
+   * writers attached to this logger, leave this option empty, as supplying a log level
+   * constraint direct to this logger will apply the same constraints to all writers.
    *
    * @type {(LogLevel | number)}
    * @memberof LoggerInstanceConfig
    */
-  level: LogLevel | number
+  level?: LogLevel | number
   /**
    * An array of LogWriter instances to use with this logger
    *

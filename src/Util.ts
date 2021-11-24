@@ -1,4 +1,17 @@
 import { promises as fs } from 'fs'
+import { LogLevel } from '.'
+
+export function computeLevel(level: LogLevel | number): number {
+  if (!level)
+    return null
+  if ((Math.log(level) / Math.log(2)) % 1) { // Masked level
+    return level
+  } else { // single level, so assign all higher levels
+    return Object.values(LogLevel)
+      .filter(l => l >= level)
+      .reduce((a, c) => a |= Number(c), 0)
+  }
+}
 
 export async function assertFile(path: string) {
   try {
