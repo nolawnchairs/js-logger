@@ -84,6 +84,15 @@ export interface WriterOptions {
    * @memberof WriterOptions
    */
   formatter?: FormatProvider;
+  /**
+   * The logging level or bitmask specific to this writer. Note that if a level
+   * is provided to the parent logger, its log level constraints will apply to
+   * the writer as well.
+   *
+   * @type {(LogLevel | number)}
+   * @memberof WriterOptions
+   */
+  level?: LogLevel | number;
 }
 export declare type FileWriterOptions = WriterOptions & {
   /**
@@ -103,25 +112,27 @@ export declare class LogWriter {
   private writerProvider;
   private _writer;
   private _formatter;
+  private _level;
   constructor(writerProvider: Provider, options?: WriterOptions);
+  isLevelEnabled(level: LogLevel): boolean;
   /**
    * Creates a new LogWriter instance that prints to stdout
    *
    * @static
-   * @param {WriterOptions} options
+   * @param {WriterOptions} [options]
    * @return {*}  {LogWriter}
    * @memberof LogWriter
    */
-  static stdout(options: WriterOptions): LogWriter;
+  static stdout(options?: WriterOptions): LogWriter;
   /**
    * Creates a new LogWriter instance that prints to stderr
    *
    * @static
-   * @param {WriterOptions} options
+   * @param {WriterOptions} [options]
    * @return {*}  {LogWriter}
    * @memberof LogWriter
    */
-  static stderr(options: WriterOptions): LogWriter;
+  static stderr(options?: WriterOptions): LogWriter;
   /**
    * Creates a new LogWriter instance that dumps to a file
    *
@@ -214,12 +225,12 @@ export interface LoggerConfig {
 }
 export interface LoggerInstanceConfig extends LoggerGlobalConfig {
   /**
-   * Whether or not this logger is enabled
+   * Whether or not this logger is enabled, defaults to true
    *
    * @type {boolean}
    * @memberof LoggerInstanceConfig
    */
-  enabled: boolean;
+  enabled?: boolean;
   /**
    * The logging level to use. Supply a single LogLevel value and the logger
    * will print all logs from the supplied level, UP. LogLevels are ordered by
@@ -230,12 +241,14 @@ export interface LoggerInstanceConfig extends LoggerGlobalConfig {
    * print only those levels. LogLevel.INFO | LogLevel.ERROR will only print logs
    * for only those two levels
    *
-   * To print ALL levels, use the provided constant LEVELS_ALL
+   * Optional. By default, will allow all levels. If supplying custom log levels to
+   * writers attached to this logger, leave this option empty, as supplying a log level
+   * constraint direct to this logger will apply the same constraints to all writers.
    *
    * @type {(LogLevel | number)}
    * @memberof LoggerInstanceConfig
    */
-  level: LogLevel | number;
+  level?: LogLevel | number;
   /**
    * An array of LogWriter instances to use with this logger
    *
@@ -338,10 +351,7 @@ declare class DefaultLogger implements Logger {
   fatal(message: any, ...args: any[]): void;
   assert(condition: boolean, message: any, ...args: any[]): void;
 }
-declare const defaultLogger: DefaultLogger;
+export declare const Log: DefaultLogger;
 export declare const LEVELS_ALL = 31;
 
-export {
-  defaultLogger as Log,
-};
-
+export { };
